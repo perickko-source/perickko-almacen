@@ -105,7 +105,27 @@ const AudioSys = {
   playMusic(f) { if(this.mainMusic){this.mainMusic.pause();this.mainMusic.currentTime=0;} this.mainMusic=new Audio(f);this.mainMusic.loop=true;this.mainMusic.volume=0.35;if(this.musicEnabled)this.mainMusic.play().catch(e=>console.log("A",e)); },
   stopMusic() { if(this.mainMusic){this.mainMusic.pause();this.mainMusic=null;} },
   playLaneChange() { if(!this.ctx||!this.sfxEnabled)return; const n=Date.now();if(n-this.lastLaneChange<200)return;this.lastLaneChange=n; const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(400,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(800,this.ctx.currentTime+0.1);g.gain.setValueAtTime(0.1,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.1);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.1); },
-  playCrash() { if(!this.ctx||!this.sfxEnabled)return; const b=this.ctx.sampleRate*0.5,buf=this.ctx.createBuffer(1,b,this.ctx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<b;i++)d[i]=Math.random()*2-1;const n=this.ctx.createBufferSource();n.buffer=buf;const g=this.ctx.createGain();g.gain.setValueAtTime(0.3,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.3);n.connect(g);g.connect(this.ctx.destination);n.start(); },
+  
+  // 🔥 NUEVO SONIDO DE COLISIÓN UNIFICADO
+  playCollision() { 
+    if(!this.ctx) return;
+    // Efecto sintético (ruido blanco)
+    if(this.sfxEnabled) {
+        const b=this.ctx.sampleRate*0.4,buf=this.ctx.createBuffer(1,b,this.ctx.sampleRate),d=buf.getChannelData(0);
+        for(let i=0;i<b;i++)d[i]=Math.random()*2-1;
+        const n=this.ctx.createBufferSource();n.buffer=buf;
+        const g=this.ctx.createGain();g.gain.setValueAtTime(0.4,this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.35);
+        n.connect(g);g.connect(this.ctx.destination);n.start(); 
+    }
+    // Sonido colision.ogg
+    if(this.sfxEnabled) {
+        const col = new Audio('colision.ogg');
+        col.volume = 0.6;
+        col.play().catch(()=>{});
+    }
+  },
+
   playJump() { if(!this.ctx||!this.sfxEnabled)return; const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='triangle';o.frequency.setValueAtTime(150,this.ctx.currentTime);o.frequency.linearRampToValueAtTime(300,this.ctx.currentTime+0.2);g.gain.setValueAtTime(0.15,this.ctx.currentTime);g.gain.linearRampToValueAtTime(0.01,this.ctx.currentTime+0.25);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.25); },
   playStar() { if(!this.ctx||!this.sfxEnabled)return; const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(1046,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(1568,this.ctx.currentTime+0.1);g.gain.setValueAtTime(0.25,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.15);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.15); },
   playExtraLife() { if(!this.ctx||!this.sfxEnabled)return; [523,659,784,1046].forEach((f,i)=>{setTimeout(()=>{const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.2,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.15);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.15);},i*80);}); },
@@ -113,7 +133,6 @@ const AudioSys = {
   playShieldCollect() { if(!this.ctx||!this.sfxEnabled)return; const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(440,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(880,this.ctx.currentTime+0.3);g.gain.setValueAtTime(0.25,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.4);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.4); },
   playTurboCollect() { if(!this.ctx||!this.sfxEnabled)return; const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sawtooth';o.frequency.setValueAtTime(220,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(880,this.ctx.currentTime+0.2);g.gain.setValueAtTime(0.2,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.3);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.3); },
   playX2Collect() { if(!this.ctx||!this.sfxEnabled)return; const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='square';o.frequency.setValueAtTime(523,this.ctx.currentTime);o.frequency.setValueAtTime(659,this.ctx.currentTime+0.1);o.frequency.setValueAtTime(784,this.ctx.currentTime+0.2);g.gain.setValueAtTime(0.15,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.3);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.3); },
-  playBoxCrash() { if(!this.ctx||!this.sfxEnabled)return; const b=this.ctx.sampleRate*0.3,buf=this.ctx.createBuffer(1,b,this.ctx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<b;i++)d[i]=(Math.random()*2-1)*0.5;const n=this.ctx.createBufferSource();n.buffer=buf;const g=this.ctx.createGain();g.gain.setValueAtTime(0.25,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.25);n.connect(g);g.connect(this.ctx.destination);n.start(); },
   toggleMusic() { this.musicEnabled=!this.musicEnabled; if(this.mainMusic)this.mainMusic.muted=!this.musicEnabled; return this.musicEnabled; },
   toggleSFX() { this.sfxEnabled=!this.sfxEnabled; return this.sfxEnabled; }
 };
@@ -156,7 +175,7 @@ function drawParticles(){
   }
 }
 
-// 🚗 COCHES DISPONIBLES - MÚSICA UNIFICADA: almacen.ogg
+// 🚗 COCHES DISPONIBLES - OSCAR SOLO COMO JUGADOR
 const WHEEL_CONFIG = { frontX: 40, y: 82, radius: 27, rimRadius: 14 };
 const WAREHOUSE_MUSIC = 'almacen.ogg';
 
@@ -165,13 +184,12 @@ const ALL_CARS = [
   {name:'Perickko', file:'perickko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
   {name:'Deivid', file:'deivid.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
   {name:'Rafa', file:'rafa.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-  {name:'Koala', file:'koala.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
+  {name:'Koala', file:'koala.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+  {name:'Oscar', file:'oscar.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
 ];
 
-// 🚨 COCHES OBSTÁCULO - OSCAR MANTIENE SU PROPIO AUDIO
-const OBSTACLE_CARS = [
-  {name:'oscar', file:'oscar.png', music:'oscar.ogg', sound:'oscar', wheels: WHEEL_CONFIG, isNormalSize: true, singleFrontWheel: true}
-];
+// 🚨 ENEMIGOS - OSCAR ELIMINADO DE AQUÍ
+const OBSTACLE_CARS = [];
 
 // 🖼️ PRECARGA DE IMÁGENES
 const images = {};
@@ -364,7 +382,7 @@ function startGame() {
 
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(e=>console.log(e));else document.exitFullscreen();}
 document.getElementById('fullscreenBtn').addEventListener('click',toggleFullscreen);
-document.getElementById('musicBtn').addEventListener('click',()=>{const e=AudioSys.toggleMusic();document.getElementById('musicBtn').innerText=e?'🎵 ON':'🎵 OFF';document.getElementById('musicBtn').classList.toggle('muted',!e);});
+document.getElementById('musicBtn').addEventListener('click',()=>{const e=AudioSys.toggleMusic();document.getElementById('musicBtn').innerText=e?'🎵 ON':' OFF';document.getElementById('musicBtn').classList.toggle('muted',!e);});
 document.getElementById('sfxBtn').addEventListener('click',()=>{const e=AudioSys.toggleSFX();document.getElementById('sfxBtn').innerText=e?'🔊 ON':' OFF';document.getElementById('sfxBtn').classList.toggle('muted',!e);});
 
 // 📦 GENERAR ESTANTERÍAS INDUSTRIALES
@@ -732,20 +750,13 @@ function spawnObstacle() {
   else if(rand < 0.60) { let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; const types = ['shield', 'turbo', 'turbo', 'x2']; const type = types[Math.floor(Math.random()*types.length)]; powerups.push({x:spawnX, y:laneY, lane, type, radius:30, collected:false, offset:Math.random()*Math.PI*2}); lastSpawnX = spawnX + 100; }
   else if(rand < 0.75) { let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; obstacles.push({x:spawnX, y:laneY, lane, isRamp:true, isStunt:true, w:220, h:60}); let carX = spawnX + 500; let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); if(available.length===0)available=ALL_CARS; let type = available[Math.floor(Math.random()*available.length)]; obstacles.push({x:carX, y:laneY, lane, type, isRamp:false, isComboTarget:true, w:CAR_W, h:CAR_H}); lastSpawnX = carX + CAR_W/2 + 100; }
   else { 
+    // OSCAR ELIMINADO COMO ENEMIGO. Solo coches genéricos.
     let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; 
-    if(Math.random() < 0.4) { 
-      let type = OBSTACLE_CARS[0]; 
-      let audio = new Audio(type.music); audio.volume = 0.50;
-      let cW = type.isNormalSize ? CAR_W : SPECIAL_W; let cH = type.isNormalSize ? CAR_H : SPECIAL_H;
-      obstacles.push({x:spawnX, y:laneY, lane, type, isRamp:false, isSpecial:true, w:cW, h:cH, vehicleAudio:audio, audioTriggered:false, scored:false}); 
-      lastSpawnX = spawnX + cW/2 + 100; 
-    } else { 
-      let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); 
-      if(available.length===0) available = ALL_CARS;
-      let type = available[Math.floor(Math.random()*available.length)]; 
-      obstacles.push({x:spawnX, y:laneY, lane, type, isRamp:false, isComboTarget:false, w:CAR_W, h:CAR_H, scored:false}); 
-      lastSpawnX = spawnX + CAR_W/2 + 100; 
-    } 
+    let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); 
+    if(available.length===0) available = ALL_CARS;
+    let type = available[Math.floor(Math.random()*available.length)]; 
+    obstacles.push({x:spawnX, y:laneY, lane, type, isRamp:false, isComboTarget:false, w:CAR_W, h:CAR_H, scored:false}); 
+    lastSpawnX = spawnX + CAR_W/2 + 100; 
   }
 }
 
@@ -780,7 +791,7 @@ function update(){
   // 📦 COLISIÓN CON CAJAS DE CARTÓN
   for(let i=boxes.length-1;i>=0;i--){let b=boxes[i];b.x-=player.speed*4;
     if (!b.scored && b.lane !== player.lane && Math.abs(player.y - b.y) < 50) { if (Math.abs(player.x - b.x) < 90) { score += 75; spawnFloatingText(player.x, player.y - 60, "CLOSE CALL! +75", "#0ff"); b.scored = true; } }
-    if(player.lane===b.lane&&Math.abs(player.x-b.x)<80){if(shieldTime>0){shieldTime-=2000;boxes.splice(i,1);ctx.fillStyle='rgba(0,204,255,0.3)';ctx.fillRect(0,0,W,H);spawnFloatingText(player.x, player.y-50, "BLOCKED!", "#00ccff");}else{score-=50; spawnFloatingText(player.x, player.y-50, "-50", "#f00"); if(collectedStars>0){collectedStars=0;AudioSys.playBoxCrash();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playBoxCrash();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);}boxes.splice(i,1);ctx.fillStyle='rgba(180,140,80,0.4)';ctx.fillRect(0,0,W,H);}continue;}if(b.x<-100)boxes.splice(i,1);}
+    if(player.lane===b.lane&&Math.abs(player.x-b.x)<80){if(shieldTime>0){shieldTime-=2000;boxes.splice(i,1);ctx.fillStyle='rgba(0,204,255,0.3)';ctx.fillRect(0,0,W,H);spawnFloatingText(player.x, player.y-50, "BLOCKED!", "#00ccff");}else{score-=50; spawnFloatingText(player.x, player.y-50, "-50", "#f00"); if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);}boxes.splice(i,1);ctx.fillStyle='rgba(180,140,80,0.4)';ctx.fillRect(0,0,W,H);}continue;}if(b.x<-100)boxes.splice(i,1);}
   
   for(let i=powerups.length-1;i>=0;i--){let p=powerups[i];p.x-=player.speed*4;if(player.lane===p.lane&&Math.abs(player.x-p.x)<70){p.collected=true;activatePowerup(p.type);if(p.type==='shield')spawnShieldPickup(p.x,p.y);else if(p.type==='turbo')spawnTurboPickup(p.x,p.y);else spawnX2Pickup(p.x,p.y);powerups.splice(i,1);continue;}if(p.x<-50)powerups.splice(i,1);}
   
@@ -820,8 +831,8 @@ function update(){
       if(o.isBoar){
          cleanupAudio(o); score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH! -100", "#f00"); 
          deactivatePowerups();
-         if(collectedStars>0){collectedStars=0;AudioSys.playCrash();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}
-         else{player.speed*=0.3;AudioSys.playCrash();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);}
+         if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}
+         else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);}
          obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives));
          if (extraLives <= 0) { if (currentScore > highScore) { highScore = currentScore; localStorage.setItem('c1_highscore', highScore); } document.getElementById('ui').classList.add('hidden'); document.getElementById('mobile-controls').classList.add('hidden'); document.getElementById('go-score-val').innerText = numFmt.format(currentScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; }
          continue;
@@ -831,8 +842,8 @@ function update(){
          continue;
       }
       score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH! -100", "#f00"); deactivatePowerups();
-      if(collectedStars>0){collectedStars=0;AudioSys.playCrash();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}
-      else{player.speed*=0.3;AudioSys.playCrash();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);}
+      if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}
+      else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);}
       cleanupAudio(o);obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives));
       if (extraLives <= 0) { if (currentScore > highScore) { highScore = currentScore; localStorage.setItem('c1_highscore', highScore); } document.getElementById('ui').classList.add('hidden'); document.getElementById('mobile-controls').classList.add('hidden'); document.getElementById('go-score-val').innerText = numFmt.format(currentScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; }
     }
