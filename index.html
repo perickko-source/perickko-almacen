@@ -170,7 +170,7 @@ function drawParticles(){
   }
 }
 
-// 🚗 TOROS DISPONIBLES (Javi incluido)
+// 🚗 TOROS DISPONIBLES (Edu y Lolo incluidos)
 const WHEEL_CONFIG = { frontX: 40, y: 82, radius: 27, rimRadius: 14 };
 const WAREHOUSE_MUSIC = 'almacen.ogg';
 
@@ -182,31 +182,32 @@ const ALL_CARS = [
   {name:'Koala', file:'koala.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
   {name:'Oscar', file:'oscar.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
   {name:'Acuña', file:'acuña.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-  {name:'Javi', file:'javi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
+  {name:'Javi', file:'javi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+  {name:'El Niño', file:'elniño.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+  {name:'Edu', file:'edu.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},   // ✅ NUEVO
+  {name:'Lolo', file:'lolo.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}  // ✅ NUEVO
 ];
 
-// 🚛 CAMIÓN LÓPEZ (OBSTÁCULO - TAMAÑO +30% + RUEDAS AJUSTADAS DEFINITIVAMENTE)
+// 🚛 OBSTÁCULOS PESADOS
 const OBSTACLE_CARS = [
   {
     name: 'camion-lopez',
     file: 'camion-lopez.png',
     music: 'camion-lopez.ogg',
-    sound: 'camion-lopez',
-    wheels: {
-      rearX: -128,    // ✅ Ajustado según imagen
-      frontX: 186,    // ✅ Ajustado según imagen
-      y: 137,         // ✅ Ajustado según imagen
-      radius: 45,     // ✅ Ajustado según imagen
-      rimRadius: 21   // ✅ Ajustado según imagen
-    },
-    isNormalSize: false, 
-    singleFrontWheel: false
+    sound: 'camion-lopez'
+  },
+  {
+    name: 'volquete',
+    file: 'volquete.png',
+    music: 'volquete.ogg',
+    sound: 'volquete'
   }
 ];
 
-//  DIMENSIONES ESPECÍFICAS DEL CAMIÓN LÓPEZ (+30%)
-const TRUCK_W = 650;  // 500 * 1.3
-const TRUCK_H = 429;  // 330 * 1.3
+//  DIMENSIONES
+const TRUCK_W = 650;  
+const TRUCK_H = 429;  
+const VOLQUETE_SCALE = 0.6; // Volquete al 60% de tamaño
 
 // 🖼️ PRECARGA DE IMÁGENES
 const images = {};
@@ -219,7 +220,7 @@ const images = {};
 const boarImg = new Image(); boarImg.src = 'jabali.png';
 
 const ROAD_Y=H-288, LANE_HEIGHT=115, LANE_TOP=ROAD_Y-LANE_HEIGHT, LANE_BOTTOM=ROAD_Y;
-const CAR_W=384, CAR_H=254, SPECIAL_W=500, SPECIAL_H=330;
+const CAR_W=384, CAR_H=254;
 const BOAR_W = 284; const BOAR_H = 154;
 
 let selectedCar=null;
@@ -396,7 +397,6 @@ function startGame() {
   document.getElementById('audioControls').classList.remove('hidden'); document.getElementById('powerup-display').classList.remove('active');
   gameActive=true; if(window.innerWidth<768)setTimeout(()=>toggleFullscreen(),100); 
   
-  // Generamos solo el almacén
   generateWarehouse();
 }
 
@@ -645,14 +645,36 @@ function spawnObstacle() {
     let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; 
     let spawnType = Math.random();
     
-    // 25% probabilidad de que aparezca el Camión López
+    // 25% probabilidad de obstáculo pesado
     if (spawnType < 0.25) {
-      let type = OBSTACLE_CARS[0];
+      let type = OBSTACLE_CARS[Math.floor(Math.random() * OBSTACLE_CARS.length)];
       let audio = new Audio(type.music); audio.volume = 0.50;
-      let cW = TRUCK_W;
-      let cH = TRUCK_H;
-      // ⬆️ SUBIDO 90 PÍXELES DESDE LA POSICIÓN DEL CARRIL
-      obstacles.push({x:spawnX, y:laneY - 90, lane, type, isRamp:false, isSpecial:true, w:cW, h:cH, vehicleAudio:audio, audioTriggered:false, scored:false});
+      let cW, cH, yOffset;
+      
+      if (type.name === 'camion-lopez') {
+        cW = TRUCK_W;
+        cH = TRUCK_H;
+        yOffset = -90; // Camión arriba en el almacén
+      } else {
+        // VOLQUETE: Tamaño 60%, posición baja al borde
+        cW = Math.floor(CAR_W * VOLQUETE_SCALE);
+        cH = Math.floor(CAR_H * VOLQUETE_SCALE);
+        yOffset = 20; // Bajado al borde inferior
+      }
+      
+      obstacles.push({
+        x: spawnX, 
+        y: laneY + yOffset, 
+        lane, 
+        type, 
+        isRamp: false, 
+        isSpecial: true, 
+        w: cW, 
+        h: cH, 
+        vehicleAudio: audio, 
+        audioTriggered: false, 
+        scored: false
+      });
       lastSpawnX = spawnX + cW/2 + 100;
     } else {
       // Resto: coches normales
