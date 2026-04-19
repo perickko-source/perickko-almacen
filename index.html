@@ -170,7 +170,7 @@ function drawParticles(){
   }
 }
 
-// 🚗 TOROS DISPONIBLES
+// 🚗 TOROS DISPONIBLES (Javi incluido)
 const WHEEL_CONFIG = { frontX: 40, y: 82, radius: 27, rimRadius: 14 };
 const WAREHOUSE_MUSIC = 'almacen.ogg';
 
@@ -182,11 +182,31 @@ const ALL_CARS = [
   {name:'Koala', file:'koala.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
   {name:'Oscar', file:'oscar.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
   {name:'Acuña', file:'acuña.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-  {name:'Javi', file:'javi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true} // <--- AQUÍ ESTÁ JAVI
+  {name:'Javi', file:'javi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
 ];
 
-// 🚨 OBSTÁCULOS VACÍOS
-const OBSTACLE_CARS = [];
+// 🚛 CAMIÓN LÓPEZ (OBSTÁCULO - TAMAÑO +30% + RUEDAS AJUSTADAS DEFINITIVAMENTE)
+const OBSTACLE_CARS = [
+  {
+    name: 'camion-lopez',
+    file: 'camion-lopez.png',
+    music: 'camion-lopez.ogg',
+    sound: 'camion-lopez',
+    wheels: {
+      rearX: -128,    // ✅ Ajustado según imagen
+      frontX: 186,    // ✅ Ajustado según imagen
+      y: 137,         // ✅ Ajustado según imagen
+      radius: 45,     // ✅ Ajustado según imagen
+      rimRadius: 21   // ✅ Ajustado según imagen
+    },
+    isNormalSize: false, 
+    singleFrontWheel: false
+  }
+];
+
+//  DIMENSIONES ESPECÍFICAS DEL CAMIÓN LÓPEZ (+30%)
+const TRUCK_W = 650;  // 500 * 1.3
+const TRUCK_H = 429;  // 330 * 1.3
 
 // 🖼️ PRECARGA DE IMÁGENES
 const images = {};
@@ -374,52 +394,38 @@ function startGame() {
   document.getElementById('game-over-screen').classList.remove('active');
   document.getElementById('ui').classList.remove('hidden'); document.getElementById('mobile-controls').classList.remove('hidden');
   document.getElementById('audioControls').classList.remove('hidden'); document.getElementById('powerup-display').classList.remove('active');
-  gameActive=true; if(window.innerWidth<768)setTimeout(()=>toggleFullscreen(),100); generateWarehouse();
+  gameActive=true; if(window.innerWidth<768)setTimeout(()=>toggleFullscreen(),100); 
+  
+  // Generamos solo el almacén
+  generateWarehouse();
 }
 
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(e=>console.log(e));else document.exitFullscreen();}
 document.getElementById('fullscreenBtn').addEventListener('click',toggleFullscreen);
-document.getElementById('musicBtn').addEventListener('click',()=>{const e=AudioSys.toggleMusic();document.getElementById('musicBtn').innerText=e?'🎵 ON':'🎵 OFF';document.getElementById('musicBtn').classList.toggle('muted',!e);});
+document.getElementById('musicBtn').addEventListener('click',()=>{const e=AudioSys.toggleMusic();document.getElementById('musicBtn').innerText=e?'🎵 ON':' OFF';document.getElementById('musicBtn').classList.toggle('muted',!e);});
 document.getElementById('sfxBtn').addEventListener('click',()=>{const e=AudioSys.toggleSFX();document.getElementById('sfxBtn').innerText=e?'🔊 ON':' OFF';document.getElementById('sfxBtn').classList.toggle('muted',!e);});
 
 // 📦 GENERAR ESTANTERÍAS INDUSTRIALES
 function generateWarehouse() {
   buildings = [];
   let x = 0;
-  
   while (x < W + 800) {
     const type = Math.random();
-    
     if (type < 0.55) {
       const height = 280 + Math.random() * 120;
       const width = 180 + Math.random() * 80;
       const levels = 3 + Math.floor(Math.random() * 2);
       const itemsPerLevel = [];
-      
       for (let lvl = 0; lvl < levels; lvl++) {
         const numItems = 1 + Math.floor(Math.random() * 3);
         const levelItems = [];
         for (let i = 0; i < numItems; i++) {
-          levelItems.push({
-            w: 40 + Math.random() * 60,
-            h: 35 + Math.random() * 45,
-            color: `hsl(${30 + Math.random() * 20}, ${20 + Math.random() * 15}%, ${40 + Math.random() * 20}%)`,
-            hasTape: Math.random() > 0.6,
-            hasLabel: Math.random() > 0.7,
-            isWhiteBox: Math.random() > 0.8
-          });
+          levelItems.push({ w: 40 + Math.random() * 60, h: 35 + Math.random() * 45, color: `hsl(${30 + Math.random() * 20}, ${20 + Math.random() * 15}%, ${40 + Math.random() * 20}%)` });
         }
         itemsPerLevel.push(levelItems);
       }
-      
-      buildings.push({
-        x, y: ROAD_Y - height, w: width, h: height,
-        type: 'industrial_shelf', levels, itemsPerLevel,
-        postColor: '#1a5276',
-        beamColor: '#d35400'
-      });
+      buildings.push({ x, y: ROAD_Y - height, w: width, h: height, type: 'industrial_shelf', levels, itemsPerLevel, postColor: '#1a5276', beamColor: '#d35400' });
       x += width + 30;
-      
     } else if (type < 0.80) {
       const stacks = 2 + Math.floor(Math.random() * 3);
       for (let s = 0; s < stacks; s++) {
@@ -427,32 +433,14 @@ function generateWarehouse() {
         const palletW = 70 + Math.random() * 30;
         const boxCount = 2 + Math.floor(Math.random() * 4);
         const boxes = [];
-        for (let b = 0; b < boxCount; b++) {
-          boxes.push({
-            w: palletW - 5 + Math.random() * 15,
-            h: 25 + Math.random() * 30,
-            color: `hsl(${35 + Math.random() * 10}, ${25 + Math.random() * 15}%, ${45 + Math.random() * 15}%)`,
-            hasBarcode: Math.random() > 0.5
-          });
-        }
-        buildings.push({
-          x: x + s * (palletW + 15), y: ROAD_Y - palletH - 15, 
-          w: palletW, h: palletH + 15,
-          type: 'floor_pallet', boxes, hasPalletBase: true
-        });
+        for (let b = 0; b < boxCount; b++) boxes.push({ w: palletW - 5 + Math.random() * 15, h: 25 + Math.random() * 30, color: `hsl(${35 + Math.random() * 10}, ${25 + Math.random() * 15}%, ${45 + Math.random() * 15}%)` });
+        buildings.push({ x: x + s * (palletW + 15), y: ROAD_Y - palletH - 15, w: palletW, h: palletH + 15, type: 'floor_pallet', boxes, hasPalletBase: true });
       }
       x += stacks * 90 + 40;
-      
     } else if (type < 0.95) {
-      buildings.push({
-        x, y: ROAD_Y - 150, w: 140, h: 150,
-        type: 'shipping_container',
-        color: `hsl(${180 + Math.random() * 40}, 40%, ${30 + Math.random() * 10}%)`
-      });
+      buildings.push({ x, y: ROAD_Y - 150, w: 140, h: 150, type: 'shipping_container', color: `hsl(${180 + Math.random() * 40}, 40%, ${30 + Math.random() * 10}%)` });
       x += 160;
-    } else {
-      x += 40 + Math.random() * 60;
-    }
+    } else { x += 40 + Math.random() * 60; }
   }
 }
 
@@ -495,122 +483,29 @@ function drawWarehouse() {
   
   buildings.forEach(b => {
     ctx.save();
-    
     if (b.type === 'industrial_shelf') {
-      const {x, y, w, h, levels, itemsPerLevel, postColor, beamColor} = b;
-      ctx.fillStyle = postColor;
-      ctx.fillRect(x, y, 12, h);
-      ctx.fillRect(x + w - 12, y, 12, h);
-      
+      ctx.fillStyle = b.postColor; ctx.fillRect(b.x, b.y, 12, b.h); ctx.fillRect(b.x + b.w - 12, b.y, 12, b.h);
       ctx.fillStyle = '#0d293b';
-      for (let py = y + 10; py < y + h - 10; py += 15) {
-        ctx.fillRect(x + 4, py, 4, 6);
-        ctx.fillRect(x + w - 8, py, 4, 6);
-      }
-      
-      const levelHeight = h / levels;
-      for (let lvl = 0; lvl < levels; lvl++) {
-        const beamY = y + lvl * levelHeight;
-        ctx.fillStyle = beamColor;
-        ctx.fillRect(x - 5, beamY, w + 10, 10);
-        ctx.fillStyle = '#e67e22';
-        ctx.fillRect(x + 5, beamY + 10, 8, 15);
-        ctx.fillRect(x + w - 13, beamY + 10, 8, 15);
-        
-        if (itemsPerLevel[lvl]) {
-          let itemX = x + 20;
-          itemsPerLevel[lvl].forEach(item => {
-            if (itemX + item.w > x + w - 20) return;
-            ctx.fillStyle = '#8b7355';
-            ctx.fillRect(itemX, beamY + 25, item.w + 10, 8);
-            ctx.fillStyle = '#6b5340';
-            for (let p = 0; p < 3; p++) {
-              ctx.fillRect(itemX + 5 + p * 18, beamY + 18, 12, 7);
-            }
-            ctx.fillStyle = item.isWhiteBox ? '#ecf0f1' : item.color;
-            ctx.fillRect(itemX + 3, beamY + 12 - item.h, item.w - 6, item.h - 13);
-            if (item.hasTape) {
-              ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-              ctx.lineWidth = 2;
-              ctx.beginPath();
-              ctx.moveTo(itemX + item.w/2 - 10, beamY + 12 - item.h + 5);
-              ctx.lineTo(itemX + item.w/2 + 10, beamY + 12 - item.h + 5);
-              ctx.lineTo(itemX + item.w/2, beamY + 12 - item.h + 15);
-              ctx.stroke();
-            }
-            if (item.hasLabel) {
-              ctx.fillStyle = '#fff';
-              ctx.fillRect(itemX + item.w - 25, beamY + 12 - item.h + 8, 18, 12);
-              ctx.fillStyle = '#333';
-              ctx.fillRect(itemX + item.w - 23, beamY + 12 - item.h + 11, 14, 2);
-              ctx.fillRect(itemX + item.w - 23, beamY + 12 - item.h + 15, 10, 2);
-            }
-            itemX += item.w + 8;
-          });
+      for (let py = b.y + 10; py < b.y + b.h - 10; py += 15) { ctx.fillRect(b.x + 4, py, 4, 6); ctx.fillRect(b.x + b.w - 8, py, 4, 6); }
+      const lh = b.h / b.levels;
+      for (let lvl = 0; lvl < b.levels; lvl++) {
+        const by = b.y + lvl * lh;
+        ctx.fillStyle = b.beamColor; ctx.fillRect(b.x - 5, by, b.w + 10, 10);
+        ctx.fillStyle = '#e67e22'; ctx.fillRect(b.x + 5, by + 10, 8, 15); ctx.fillRect(b.x + b.w - 13, by + 10, 8, 15);
+        if (b.itemsPerLevel[lvl]) {
+          let ix = b.x + 20;
+          b.itemsPerLevel[lvl].forEach(it => { if (ix + it.w > b.x + b.w - 20) return; ctx.fillStyle = it.color; ctx.fillRect(ix + 3, by + 12 - it.h, it.w - 6, it.h - 13); ix += it.w + 8; });
         }
       }
-      ctx.fillStyle = postColor;
-      ctx.fillRect(x - 5, y + h - 15, w + 10, 15);
-      
+      ctx.fillStyle = b.postColor; ctx.fillRect(b.x - 5, b.y + b.h - 15, b.w + 10, 15);
     } else if (b.type === 'floor_pallet') {
-      const {x, y, w, h, boxes, hasPalletBase} = b;
-      if (hasPalletBase) {
-        ctx.fillStyle = '#8b7355';
-        ctx.fillRect(x - 3, y + h - 12, w + 6, 12);
-        ctx.fillStyle = '#6b5340';
-        for (let p = 0; p < 3; p++) {
-          ctx.fillRect(x + 5 + p * (w/3), y + h - 15, w/4, 3);
-        }
-      }
-      let currentY = y + h - (hasPalletBase ? 15 : 5);
-      boxes.forEach(box => {
-        ctx.fillStyle = box.color;
-        ctx.fillRect(x + (w - box.w)/2, currentY - box.h, box.w, box.h);
-        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x + (w - box.w)/2 + 2, currentY - box.h + 2, box.w - 4, box.h - 4);
-        if (box.hasBarcode) {
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(x + w/2 - 15, currentY - box.h + box.h/2 - 8, 30, 16);
-          ctx.fillStyle = '#333';
-          for (let bar = 0; bar < 12; bar++) {
-            ctx.fillRect(x + w/2 - 12 + bar * 2, currentY - box.h + box.h/2 - 6, 1, 12);
-          }
-        }
-        currentY -= box.h + 2;
-      });
-      
-    } else if (b.type === 'shipping_container') {
-      const {x, y, w, h, color} = b;
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      for (let i = 0; i < 5; i++) {
-        ctx.fillRect(x + 10 + i * 25, y, 6, h);
-      }
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([8, 4]);
-      ctx.beginPath();
-      ctx.moveTo(x + w/2, y + 10);
-      ctx.lineTo(x + w/2, y + h - 10);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = '#222';
-      ctx.fillRect(x, y, 10, 10);
-      ctx.fillRect(x + w - 10, y, 10, 10);
-      ctx.fillRect(x, y + h - 10, 10, 10);
-      ctx.fillRect(x + w - 10, y + h - 10, 10, 10);
-    }
+      ctx.fillStyle = '#8b7355'; ctx.fillRect(b.x - 3, b.y + b.h - 12, b.w + 6, 12);
+      let cy = b.y + b.h - 5;
+      b.boxes.forEach(bx => { ctx.fillStyle = bx.color; ctx.fillRect(b.x + (b.w - bx.w)/2, cy - bx.h, bx.w, bx.h); cy -= bx.h + 2; });
+    } else if (b.type === 'shipping_container') { ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.w, b.h); }
     ctx.restore();
   });
-  
-  ctx.strokeStyle = 'rgba(100,100,120,0.5)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, ROAD_Y);
-  ctx.lineTo(W, ROAD_Y);
-  ctx.stroke();
+  ctx.strokeStyle = 'rgba(100,100,120,0.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, ROAD_Y); ctx.lineTo(W, ROAD_Y); ctx.stroke();
 }
 
 function drawRamp(obs) { ctx.save();ctx.translate(obs.x,obs.y+40); ctx.fillStyle=obs.isStunt?'#ff00ff':'#ffaa00';ctx.strokeStyle='#fff';ctx.lineWidth=6; ctx.beginPath();ctx.moveTo(-obs.w/2,obs.h/2);ctx.lineTo(obs.w/2,obs.h/2);ctx.lineTo(obs.w/2,-obs.h/2);ctx.closePath();ctx.fill();ctx.stroke(); ctx.fillStyle='#fff';ctx.fillRect(-30,10,20,25);ctx.fillRect(20,-10,20,35); if(obs.isStunt){ctx.font='bold 40px monospace';ctx.fillStyle='#fff';ctx.fillText('!',-10,-10);} ctx.restore(); }
@@ -748,17 +643,31 @@ function spawnObstacle() {
   else if(rand < 0.75) { let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; obstacles.push({x:spawnX, y:laneY, lane, isRamp:true, isStunt:true, w:220, h:60}); let carX = spawnX + 500; let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); if(available.length===0)available=ALL_CARS; let type = available[Math.floor(Math.random()*available.length)]; obstacles.push({x:carX, y:laneY, lane, type, isRamp:false, isComboTarget:true, w:CAR_W, h:CAR_H}); lastSpawnX = carX + CAR_W/2 + 100; }
   else { 
     let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; 
-    let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); 
-    if(available.length===0) available = ALL_CARS;
-    let type = available[Math.floor(Math.random()*available.length)]; 
-    obstacles.push({x:spawnX, y:laneY, lane, type, isRamp:false, isComboTarget:false, w:CAR_W, h:CAR_H, scored:false}); 
-    lastSpawnX = spawnX + CAR_W/2 + 100; 
+    let spawnType = Math.random();
+    
+    // 25% probabilidad de que aparezca el Camión López
+    if (spawnType < 0.25) {
+      let type = OBSTACLE_CARS[0];
+      let audio = new Audio(type.music); audio.volume = 0.50;
+      let cW = TRUCK_W;
+      let cH = TRUCK_H;
+      // ⬆️ SUBIDO 90 PÍXELES DESDE LA POSICIÓN DEL CARRIL
+      obstacles.push({x:spawnX, y:laneY - 90, lane, type, isRamp:false, isSpecial:true, w:cW, h:cH, vehicleAudio:audio, audioTriggered:false, scored:false});
+      lastSpawnX = spawnX + cW/2 + 100;
+    } else {
+      // Resto: coches normales
+      let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); 
+      if(available.length===0) available = ALL_CARS;
+      let type = available[Math.floor(Math.random()*available.length)]; 
+      obstacles.push({x:spawnX, y:laneY, lane, type, isRamp:false, isComboTarget:false, w:CAR_W, h:CAR_H, scored:false}); 
+      lastSpawnX = spawnX + CAR_W/2 + 100; 
+    }
   }
 }
 
 function cleanupAudio(obj) { if (obj && obj.vehicleAudio) { obj.vehicleAudio.pause(); obj.vehicleAudio.src = ''; obj.vehicleAudio = null; } }
 
-function update(){
+function update(dt){
   if(!gameActive)return;
   if(shieldTime>0){shieldTime-=16;if(shieldTime<=0){shieldTime=0;updatePowerupUI();}}
   
@@ -772,6 +681,7 @@ function update(){
 
   player.speed=isBraking?Math.max(0,player.speed-0.1):Math.min(player.speed+0.01,player.maxSpeed);
   player.y+=(player.targetY-player.y)*0.15; roadOffset+=player.speed*4; wheelRotation+=player.speed*0.12;
+  
   buildings.forEach(b=>{b.x-=player.speed*1.5;if(b.x+b.w<0){b.x=W+Math.random()*192;b.h=154+Math.random()*288;b.y=ROAD_Y-b.h;}});
   if(player.speed>1){let ex=player.x-player.w/2+30,ey=player.y-player.jumpY+player.h/2-60;for(let i=0;i<Math.floor(player.speed*0.4);i++)spawnSmoke(ex,ey);}
   
@@ -792,50 +702,34 @@ function update(){
   
   for(let i=obstacles.length-1;i>=0;i--){
     let o=obstacles[i]; o.x-=player.speed*4;
-    
     if((o.isSpecial || o.isBoar) && o.vehicleAudio && !o.audioTriggered){
-      if(o.x < W + 100 && AudioSys.musicEnabled){
-        o.vehicleAudio.volume = 0.50; o.vehicleAudio.play().catch(()=>{}); o.audioTriggered = true;
-      }
+      if(o.x < W + 100 && AudioSys.musicEnabled){ o.vehicleAudio.volume = 0.50; o.vehicleAudio.play().catch(()=>{}); o.audioTriggered = true; }
     }
-
     if (!o.scored && !o.isRamp && !o.isBoar && o.lane !== player.lane && Math.abs(player.y - o.y) < 50) { 
       if (Math.abs(player.x - o.x) < 100) { score += 75; spawnFloatingText(player.x, player.y - 60, "CLOSE CALL! +75", "#0ff"); o.scored = true; } 
     }
-
     if(o.isRamp && !player.isJumping && player.lane===o.lane){
       if(Math.abs(player.x-o.x)<140){
         player.isJumping=true;
-        if(o.isStunt){player.jumpVel=26;player.jumpAngle=-0.8;}
-        else{player.jumpVel=16;player.jumpAngle=-0.6;}
+        if(o.isStunt){player.jumpVel=26;player.jumpAngle=-0.8;} else{player.jumpVel=16;player.jumpAngle=-0.6;}
         score += 100; spawnFloatingText(player.x, player.y-80, "JUMP! +100", "#ffaa00"); 
         AudioSys.playJump(); cleanupAudio(o); obstacles.splice(i,1); continue;
       }
     }
-    
     if(!o.isRamp && player.lane===o.lane && Math.abs(player.x-o.x)<269){
       if(shieldTime > 0){
-        shieldTime -= 3000;
-        if(shieldTime <= 0) updatePowerupUI();
-        cleanupAudio(o);
-        obstacles.splice(i,1);
-        ctx.fillStyle='rgba(0,204,255,0.3)';ctx.fillRect(0,0,W,H);
-        spawnFloatingText(player.x, player.y-50, "BLOCKED!", "#00ccff");
-        continue;
+        shieldTime -= 3000; if(shieldTime <= 0) updatePowerupUI(); cleanupAudio(o); obstacles.splice(i,1);
+        ctx.fillStyle='rgba(0,204,255,0.3)';ctx.fillRect(0,0,W,H); spawnFloatingText(player.x, player.y-50, "BLOCKED!", "#00ccff"); continue;
       }
       if(o.isBoar){
-         cleanupAudio(o); score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH! -100", "#f00"); 
-         deactivatePowerups();
+         cleanupAudio(o); score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH! -100", "#f00"); deactivatePowerups();
          if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}
          else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);}
          obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives));
          if (extraLives <= 0) { if (currentScore > highScore) { highScore = currentScore; localStorage.setItem('c1_highscore', highScore); } document.getElementById('ui').classList.add('hidden'); document.getElementById('mobile-controls').classList.add('hidden'); document.getElementById('go-score-val').innerText = numFmt.format(currentScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; }
          continue;
       }
-      if(player.isJumping && player.jumpY > 70){
-         if(!o.scored){ score += 50; spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); o.scored = true; }
-         continue;
-      }
+      if(player.isJumping && player.jumpY > 70){ if(!o.scored){ score += 50; spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); o.scored = true; } continue; }
       score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH! -100", "#f00"); deactivatePowerups();
       if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}
       else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);}
@@ -859,11 +753,25 @@ function update(){
   }
 }
 
-function loop(){ctx.clearRect(0,0,W,H);drawWarehouse();drawRoad();let list=[];stars.forEach(s=>{if(!s.collected)list.push({t:'star',o:s,y:s.y})});boxes.forEach(b=>list.push({t:'box',o:b,y:b.y}));powerups.forEach(p=>{if(!p.collected)list.push({t:'powerup',o:p,y:p.y})});obstacles.forEach(o=>list.push({t:'obs',o,y:o.y}));if(gameActive)list.push({t:'p',o:player,y:player.y-player.jumpY});list.sort((a,b)=>a.y-b.y);list.forEach(i=>{if(i.t==='p')drawPlayerSprite();else if(i.t==='star')drawStar(i.o);else if(i.t==='box')drawBox(i.o);else if(i.t==='powerup')drawPowerup(i.o);else if(i.o.isRamp)drawRamp(i.o);else drawObstacleSprite(i.o);});drawParticles();
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  drawWarehouse();
+  drawRoad();
+  let list=[];
+  stars.forEach(s=>{if(!s.collected)list.push({t:'star',o:s,y:s.y})});
+  boxes.forEach(b=>list.push({t:'box',o:b,y:b.y}));
+  powerups.forEach(p=>{if(!p.collected)list.push({t:'powerup',o:p,y:p.y})});
+  obstacles.forEach(o=>list.push({t:'obs',o,y:o.y}));
+  if(gameActive)list.push({t:'p',o:player,y:player.y-player.jumpY});
+  list.sort((a,b)=>a.y-b.y);
+  list.forEach(i=>{if(i.t==='p')drawPlayerSprite();else if(i.t==='star')drawStar(i.o);else if(i.t==='box')drawBox(i.o);else if(i.t==='powerup')drawPowerup(i.o);else if(i.o.isRamp)drawRamp(i.o);else drawObstacleSprite(i.o);});
+  drawParticles();
 
   floatingTexts.forEach(ft => { ctx.save(); ctx.globalAlpha = ft.life; ctx.fillStyle = ft.color; ctx.shadowColor = "#000"; ctx.shadowBlur = 4; ctx.font = "16px 'Press Start 2P', monospace"; ctx.textAlign = "center"; ctx.fillText(ft.text, ft.x, ft.y); ctx.restore(); });
 
-  if(gameActive)update();requestAnimationFrame(loop);}
+  if(gameActive)update(0.016);
+  requestAnimationFrame(loop);
+}
 
 initMenu();generateWarehouse();requestAnimationFrame(loop);
 </script>
