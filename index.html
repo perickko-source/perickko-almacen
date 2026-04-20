@@ -11,14 +11,29 @@
     * { -webkit-tap-highlight-color: transparent; touch-action: none; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
     html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; position: fixed; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; }
     canvas { image-rendering: pixelated; display: block; }
-    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
+    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
     .screen.hidden { display: none; }
-    h1 { color: #fff; font-size: 22px; margin-bottom: 25px; text-shadow: 4px 4px #0ff; text-transform: uppercase; text-align: center; padding: 0 15px; line-height: 1.5; }
-    .car-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; max-width: 95%; padding: 10px; }
-    .car-btn { background: #1a1a1a; border: 4px solid #333; padding: 10px; cursor: pointer; text-align: center; width: 85px; transition: transform 0.1s; box-shadow: 4px 4px 0 #000; }
-    .car-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
-    .car-btn img { width: 75px; height: 45px; object-fit: contain; margin-bottom: 5px; display: block; margin: 0 auto; }
-    .car-btn span { color: #fff; font-size: 9px; font-weight: bold; display: block; margin-top: 5px; }
+    h1 { color: #fff; font-size: 22px; margin-bottom: 20px; text-shadow: 4px 4px #0ff; text-transform: uppercase; text-align: center; padding: 0 15px; line-height: 1.5; }
+    
+    /* 🆕 CARRUSEL HORIZONTAL */
+    .carousel-section { width: 100%; max-width: 95vw; margin-bottom: 15px; text-align: center; }
+    .carousel-label { font-size: 10px; color: #0ff; margin-bottom: 8px; }
+    .carousel-viewport { overflow: hidden; position: relative; padding: 5px 0; }
+    .carousel-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; gap: 12px; padding: 5px 15px; scrollbar-width: none; }
+    .carousel-track::-webkit-scrollbar { display: none; }
+    .carousel-car { flex: 0 0 auto; scroll-snap-align: center; background: #1a1a1a; border: 3px solid #333; border-radius: 8px; padding: 8px; text-align: center; width: 85px; transition: all 0.15s; box-shadow: 3px 3px 0 #000; cursor: pointer; }
+    .carousel-car:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+    .carousel-car.selected { border-color: #0ff; box-shadow: 0 0 12px rgba(0,255,255,0.4); }
+    .carousel-car img { width: 65px; height: 40px; object-fit: contain; margin-bottom: 4px; display: block; margin: 0 auto; }
+    .carousel-car .car-name { color: #fff; font-size: 8px; font-weight: bold; display: block; margin-top: 4px; }
+    
+    .carousel-nav { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 8px; }
+    .nav-arrow { background: #0ff; color: #000; border: none; width: 28px; height: 28px; font-size: 14px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 #005555; }
+    .nav-arrow:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #005555; }
+    .page-dots { display: flex; gap: 6px; }
+    .page-dot { width: 8px; height: 8px; border-radius: 50%; background: #333; transition: all 0.2s; }
+    .page-dot.active { background: #0ff; transform: scale(1.3); }
+
     #radio-screen h2 { color: #ffaa00; font-size: 18px; margin: 20px 0; text-shadow: 2px 2px #f00; }
     #radio-screen p { color: #aaa; font-size: 11px; margin-bottom: 25px; text-align: center; line-height: 1.5; }
     #radio-img { width: 180px; margin-bottom: 20px; border: 4px solid #fff; image-rendering: pixelated; }
@@ -93,8 +108,21 @@
 <body>
   <div id="menu" class="screen">
     <h1>ALMACÉN RUNNER</h1>
-    <div class="car-grid" id="car-options"></div>
-    <p style="color:#aaa; margin-top:20px; font-size:10px;">RÉCORD: <span id="menu-high-score">0</span></p>
+    
+    <!-- 🆕 CARRUSEL DE TOROS -->
+    <div class="carousel-section">
+      <div class="carousel-label">👆 ELIGE TU TORO</div>
+      <div class="carousel-viewport">
+        <div class="carousel-track" id="car-options"></div>
+      </div>
+      <div class="carousel-nav">
+        <button class="nav-arrow" id="prevBtn">◀</button>
+        <div class="page-dots" id="pageDots"></div>
+        <button class="nav-arrow" id="nextBtn">▶</button>
+      </div>
+    </div>
+
+    <p style="color:#aaa; margin-top:10px; font-size:10px;">RÉCORD: <span id="menu-high-score">0</span></p>
     <button class="rank-btn" id="rankBtn">🏆 RANKING</button>
   </div>
   
@@ -228,7 +256,7 @@
 
   let particles=[]; const PARTICLE_MAX=300;
   let floatingTexts=[]; const TEXT_MAX=20;
-  let finalScore = 0; // ✅ PUNTUACIÓN FINAL CORREGIDA
+  let finalScore = 0;
 
   function showPowerUpNotification(type) {
       const notifEl = document.getElementById('html-notification');
@@ -253,15 +281,25 @@
 
   const WHEEL_CONFIG = { frontX: 40, y: 82, radius: 27, rimRadius: 14 };
   const ALL_CARS = [
-    {name:'Kiko', file:'kiko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Perickko', file:'perickko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Deivid', file:'deivid.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Rafa', file:'rafa.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Koala', file:'koala.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Oscar', file:'oscar.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Acuña', file:'acuña.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Javi', file:'javi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'El Niño', file:'elniño.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Edu', file:'edu.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Lolo', file:'lolo.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Aberkane', file:'aberkane.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Gasca', file:'gasca.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Cristina', file:'cristina.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Jaume', file:'jaume.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Jordi', file:'jordi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Tinoco', file:'tinoco.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
+    {name:'Kiko', file:'kiko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Perickko', file:'perickko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Deivid', file:'deivid.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Rafa', file:'rafa.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Koala', file:'koala.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Oscar', file:'oscar.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Acuña', file:'acuña.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Javi', file:'javi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'El Niño', file:'elniño.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Edu', file:'edu.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Lolo', file:'lolo.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Aberkane', file:'aberkane.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Gasca', file:'gasca.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Cristina', file:'cristina.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Jaume', file:'jaume.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Jordi', file:'jordi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Tinoco', file:'tinoco.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Andres', file:'andres.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Xisc1', file:'xisc1.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
   ];
   const OBSTACLE_CARS = [ { name: 'camion-lopez', file: 'camion-lopez.png', music: 'camion-lopez.ogg', sound: 'camion-lopez' }, { name: 'volquete', file: 'volquete.png', music: 'volquete.ogg', sound: 'volquete' } ];
   const TRUCK_W = 650, TRUCK_H = 429, VOLQUETE_SCALE = 0.6;
@@ -286,7 +324,57 @@
   function drawStar(star) { ctx.save();ctx.translate(star.x,star.y); const pulse=(Math.sin(Date.now()/100+star.offset)+1)/2; const glow=ctx.createRadialGradient(0,0,10,0,0,40); glow.addColorStop(0,`rgba(255,255,200,${0.6+pulse*0.4})`);glow.addColorStop(0.5,`rgba(255,215,0,${0.3+pulse*0.3})`);glow.addColorStop(1,'rgba(255,165,0,0)'); ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,40,0,Math.PI*2);ctx.fill(); ctx.fillStyle='#ffd700';ctx.beginPath(); for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,r=i%2===0?18:8;i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);} ctx.closePath();ctx.fill(); ctx.fillStyle=`rgba(255,255,255,${0.5+pulse*0.3})`;ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fill(); ctx.restore(); }
   function drawBox(box) { ctx.save(); ctx.translate(box.x, box.y); const pulse = (Math.sin(Date.now() / 150) + 1) / 2; ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-box.w/2 + 4, -box.h/2 + 4, box.w, box.h); const boxGrad = ctx.createLinearGradient(-box.w/2, -box.h/2, box.w/2, box.h/2); boxGrad.addColorStop(0, '#c4956a'); boxGrad.addColorStop(0.5, '#b8845c'); boxGrad.addColorStop(1, '#a67549'); ctx.fillStyle = boxGrad; ctx.fillRect(-box.w/2, -box.h/2, box.w, box.h); ctx.strokeStyle = '#8b6040'; ctx.lineWidth = 2; ctx.strokeRect(-box.w/2, -box.h/2, box.w, box.h); ctx.fillStyle = '#c99e74'; ctx.beginPath(); ctx.moveTo(-box.w/2, -box.h/2); ctx.lineTo(0, -box.h/2 + 10); ctx.lineTo(box.w/2, -box.h/2); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#8b6040'; ctx.stroke(); ctx.strokeStyle = 'rgba(200,200,200,0.7)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, -box.h/2 + 5); ctx.lineTo(0, box.h/2 - 5); ctx.moveTo(-box.w/2 + 5, 0); ctx.lineTo(box.w/2 - 5, 0); ctx.stroke(); ctx.fillStyle = '#f5f0e8'; ctx.fillRect(-box.w/2 + 8, -box.h/2 + 15, box.w - 16, 16); ctx.fillStyle = '#333'; for (let i = 0; i < 8; i++) { ctx.fillRect(-box.w/2 + 12 + i * (box.w/10), -box.h/2 + 18, 1 + Math.floor(Math.random() * 2), 10); } ctx.fillStyle = '#8b6040'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.fillText('⬆', 0, box.h/2 - 8); ctx.shadowColor = '#c4956a'; ctx.shadowBlur = 8 + pulse * 6; ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(-box.w/2, -box.h/2, box.w/3, box.h); ctx.restore(); }
   function drawPowerup(powerup) { ctx.save();ctx.translate(powerup.x,powerup.y); const pulse=(Math.sin(Date.now()/100+powerup.offset)+1)/2; const scale=1+pulse*0.2;ctx.scale(scale,scale); let color,icon; if(powerup.type==='shield'){color='#00ccff';icon='🛡️';} else if(powerup.type==='turbo'){color='#ff4400';icon='⚡';} else {color='#ffd700';icon='✨';} ctx.shadowColor=color;ctx.shadowBlur=20; ctx.fillStyle=color;ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(0,0,35,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1; ctx.font='bold 30px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=color;ctx.fillText(icon,0,0); ctx.restore(); }
-  function initMenu() { const grid=document.getElementById('car-options'); ALL_CARS.forEach(car=>{ const btn=document.createElement('div');btn.className='car-btn'; btn.innerHTML=`<img src="${car.file}"><span>${car.name}</span>`; const select=()=>{selectedCar=car;document.getElementById('menu').classList.add('hidden');document.getElementById('radio-screen').classList.remove('hidden');}; btn.addEventListener('click',select);btn.addEventListener('touchstart',(e)=>{e.preventDefault();select();}); grid.appendChild(btn); }); }
+
+  // 🆕 INICIALIZACIÓN DEL CARRUSEL
+  function initMenu() { 
+    const track = document.getElementById('car-options');
+    const dotsContainer = document.getElementById('pageDots');
+    track.innerHTML = '';
+    dotsContainer.innerHTML = '';
+    
+    ALL_CARS.forEach(car => {
+      const item = document.createElement('div');
+      item.className = 'carousel-car';
+      item.innerHTML = `<img src="${car.file}" alt="${car.name}"><span class="car-name">${car.name}</span>`;
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.carousel-car').forEach(c => c.classList.remove('selected'));
+        item.classList.add('selected');
+        selectedCar = car;
+        
+        // ✅ TRANSICIÓN A LA PANTALLA DE RADIO
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById('radio-screen').classList.remove('hidden');
+      });
+      track.appendChild(item);
+    });
+
+    const itemsPerView = 3;
+    const totalPages = Math.ceil(ALL_CARS.length / itemsPerView);
+    for(let i=0; i<totalPages; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'page-dot' + (i===0?' active':'');
+      dotsContainer.appendChild(dot);
+    }
+
+    document.getElementById('prevBtn').onclick = () => scrollCarousel(-1);
+    document.getElementById('nextBtn').onclick = () => scrollCarousel(1);
+
+    function scrollCarousel(dir) {
+      const itemWidth = 97; // 85px + 12px gap
+      track.scrollBy({ left: dir * itemWidth * itemsPerView, behavior: 'smooth' });
+      setTimeout(updateDots, 300);
+    }
+
+    function updateDots() {
+      const scrollLeft = track.scrollLeft;
+      const itemWidth = 97;
+      const currentPage = Math.round(scrollLeft / (itemWidth * itemsPerView));
+      document.querySelectorAll('.page-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === Math.min(currentPage, totalPages-1));
+      });
+    }
+    track.addEventListener('scroll', updateDots);
+  }
 
   document.getElementById('playBtn').addEventListener('click',startGame);
   document.getElementById('playBtn').addEventListener('touchstart',(e)=>{e.preventDefault();startGame();});
@@ -304,7 +392,7 @@
     AudioSys.playMusic(musicOptions[Math.floor(Math.random() * musicOptions.length)]);
     collectedStars=0;extraLives=3;stars=[];boxes=[];powerups=[];obstacles=[];buildings=[];
     lastSpawnX=W+200;spawnGapTracker=0;nextSpawnGap=300+Math.random()*200; starLaneToggle=0;score=0;roadOffset=0; turboCount=0;x2Count=0;shieldTime=0;
-    bankedScore = 0; finalScore = 0; // ✅ RESET
+    bankedScore = 0; finalScore = 0;
     floatingTexts = []; particles = []; lastCheckpoint = 0; lastDisplayedScore = -1;
     localStorage.removeItem('c1_session_checkpoint');
     document.getElementById('radio-screen').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('active');
@@ -378,14 +466,13 @@
 
   function loop(){ ctx.clearRect(0,0,W,H); drawWarehouse(); drawRoad(); let list=[]; stars.forEach(s=>{if(!s.collected)list.push({t:'star',o:s,y:s.y})}); boxes.forEach(b=>list.push({t:'box',o:b,y:b.y})); powerups.forEach(p=>{if(!p.collected)list.push({t:'powerup',o:p,y:p.y})}); obstacles.forEach(o=>list.push({t:'obs',o,y:o.y})); if(gameActive)list.push({t:'p',o:player,y:player.y-player.jumpY}); list.sort((a,b)=>a.y-b.y); list.forEach(i=>{if(i.t==='p')drawPlayerSprite();else if(i.t==='star')drawStar(i.o);else if(i.t==='box')drawBox(i.o);else if(i.t==='powerup')drawPowerup(i.o);else if(i.o.isRamp)drawRamp(i.o);else drawObstacleSprite(i.o);}); drawParticles(); floatingTexts.forEach(ft => { ctx.save(); ctx.globalAlpha = ft.life; ctx.fillStyle = ft.color; ctx.shadowColor = "#000"; ctx.shadowBlur = 4; ctx.font = "16px 'Press Start 2P', monospace"; ctx.textAlign = "center"; ctx.fillText(ft.text, ft.x, ft.y); ctx.restore(); }); if(gameActive)update(0.016); requestAnimationFrame(loop); }
 
-  // ✅ GUARDAR PUNTUACIÓN CORREGIDO
   document.getElementById('saveScoreBtn').addEventListener('click', () => {
     const nameInput = document.getElementById('player-name');
     const name = nameInput.value.trim();
     if (!name) { alert('¡Introduce un nombre!'); return; }
     saveScoreToFirebase(name, finalScore);
     showPowerUpNotification('✅ GUARDADO!');
-    nameInput.value = ''; // Limpiar para otro intento
+    nameInput.value = '';
   });
 
   initMenu();generateWarehouse();requestAnimationFrame(loop);
