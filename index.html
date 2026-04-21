@@ -11,11 +11,13 @@
     * { -webkit-tap-highlight-color: transparent; touch-action: none; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
     html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; position: fixed; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; }
     canvas { image-rendering: pixelated; display: block; }
+    
+    /* --- PANTALLAS GENERALES --- */
     .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
     .screen.hidden { display: none; }
     h1 { color: #fff; font-size: 22px; margin-bottom: 20px; text-shadow: 4px 4px #0ff; text-transform: uppercase; text-align: center; padding: 0 15px; line-height: 1.5; }
     
-    /* 🆕 CARRUSEL HORIZONTAL */
+    /* --- CARRUSEL HORIZONTAL (Menú Principal) --- */
     .carousel-section { width: 100%; max-width: 95vw; margin-bottom: 15px; text-align: center; }
     .carousel-label { font-size: 10px; color: #0ff; margin-bottom: 8px; }
     .carousel-viewport { overflow: hidden; position: relative; padding: 5px 0; }
@@ -34,11 +36,14 @@
     .page-dot { width: 8px; height: 8px; border-radius: 50%; background: #333; transition: all 0.2s; }
     .page-dot.active { background: #0ff; transform: scale(1.3); }
 
+    /* --- RADIO SCREEN --- */
     #radio-screen h2 { color: #ffaa00; font-size: 18px; margin: 20px 0; text-shadow: 2px 2px #f00; }
     #radio-screen p { color: #aaa; font-size: 11px; margin-bottom: 25px; text-align: center; line-height: 1.5; }
     #radio-img { width: 180px; margin-bottom: 20px; border: 4px solid #fff; image-rendering: pixelated; }
     .play-btn { background: #0ff; color: #000; border: 4px solid #fff; padding: 15px 25px; font-family: 'Press Start 2P', cursive; font-size: 14px; cursor: pointer; box-shadow: 4px 4px 0 #005555; text-transform: uppercase; }
     .play-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #005555; }
+
+    /* --- UI DEL JUEGO --- */
     #ui { position: fixed; top: max(10px, env(safe-area-inset-top)); right: 10px; color: #fff; font-size: 13px; text-shadow: 2px 2px #000; pointer-events: none; z-index: 100; text-align: right; line-height: 1.7; background: rgba(0,0,0,0.7); padding: 8px 12px; border: 2px solid #0ff; border-radius: 6px; max-width: 45vw; }
     #speed { color: #0ff; font-size: 18px; }
     #score-display { color: #ffd700; font-size: 14px; }
@@ -57,17 +62,175 @@
     .audio-btn.muted { opacity: 0.3; border-color: #555; }
     #fullscreenBtn { position: fixed; top: 85px; left: 10px; z-index: 100; background: #000; border: 2px solid #0ff; color: #0ff; padding: 6px 10px; font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer; }
     @media (max-width: 768px) { #fullscreenBtn { display: block; } }
-    #game-over-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
-    #game-over-screen.active { display: flex; }
-    .go-title { font-size: 28px; color: #f00; text-shadow: 4px 4px #fff; margin-bottom: 20px; }
-    .go-score { font-size: 15px; color: #ffd700; margin-bottom: 10px; }
-    .go-best { font-size: 13px; color: #ff00ff; margin-bottom: 15px; }
-    .restart-btn { background: #0f0; color: #000; border: 4px solid #fff; padding: 12px 18px; font-family: 'Press Start 2P', cursive; font-size: 13px; cursor: pointer; box-shadow: 4px 4px 0 #005500; }
-    .other-car-btn { background: #888; color: #000; border: 4px solid #444; padding: 10px 15px; font-family: 'Press Start 2P', cursive; font-size: 11px; cursor: pointer; box-shadow: 3px 3px 0 #000; margin-top: 15px; }
-    .other-car-btn:hover { background: #aaa; }
-    .other-car-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
 
-    /* 🆕 ESTILOS PARA LA NOTIFICACIÓN HTML */
+    /* --- 🎮 NUEVO DISEÑO GAME OVER (RESPONSIVE) --- */
+    #game-over-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.98); /* Fondo casi negro sólido */
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    #game-over-screen.active { display: flex; }
+
+    .go-card {
+      background: #1a1a1a;
+      border: 4px solid #fff;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      padding: 20px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 450px;
+      max-height: 95vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      overflow-y: auto;
+      animation: pop-in 0.3s ease-out;
+    }
+
+    @keyframes pop-in {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .go-title {
+      font-size: 28px;
+      color: #f00;
+      text-shadow: 4px 4px #000;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .go-stats-row {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 10px;
+      background: #000;
+      padding: 15px;
+      border: 2px solid #333;
+      border-radius: 8px;
+    }
+
+    .go-stat {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+    .go-stat .label { color: #aaa; }
+    .go-stat .value { color: #ffd700; font-weight: bold; }
+
+    .go-input-container { width: 100%; text-align: center; }
+    .go-input-label { display: block; color: #0ff; font-size: 11px; margin-bottom: 8px; line-height: 1.4; }
+
+    .player-name-input {
+      width: 100%;
+      box-sizing: border-box;
+      background: #222;
+      border: 3px solid #0ff;
+      color: #fff;
+      padding: 10px;
+      font-family: 'Press Start 2P';
+      font-size: 12px;
+      text-align: center;
+      text-transform: uppercase;
+      outline: none;
+      border-radius: 4px;
+    }
+    .player-name-input:focus { border-color: #ff0; background: #333; }
+
+    .go-actions { display: flex; flex-direction: column; width: 100%; gap: 10px; }
+
+    .btn-retry {
+      background: #0f0; color: #000; border: none; padding: 12px;
+      font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;
+      border-radius: 4px; box-shadow: 0 4px 0 #005500; text-transform: uppercase;
+    }
+    .btn-retry:active { transform: translateY(4px); box-shadow: none; }
+
+    .btn-save {
+      background: #0ff; color: #000; border: none; padding: 12px;
+      font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;
+      border-radius: 4px; box-shadow: 0 4px 0 #005555; text-transform: uppercase;
+    }
+    .btn-save:active { transform: translateY(4px); box-shadow: none; }
+
+    .btn-other {
+      background: transparent; color: #888; border: 2px solid #444; padding: 8px;
+      font-family: 'Press Start 2P'; font-size: 10px; cursor: pointer; border-radius: 4px;
+    }
+    .btn-other:hover { color: #fff; border-color: #fff; }
+
+    /* 📱 MODO HORIZONTAL (LANDSCAPE) - ADAPTATIVO */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .go-card {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-content: center;
+        justify-content: center;
+        padding: 10px;
+        max-width: 90vw;
+        height: auto;
+        max-height: 90vh;
+      }
+
+      .go-title { width: 100%; font-size: 18px; margin-bottom: 5px; }
+
+      .go-stats-row {
+        flex-direction: row;
+        padding: 8px;
+        width: auto;
+        min-width: 300px;
+        flex: 1;
+      }
+      
+      .go-stat { font-size: 11px; flex-direction: column; align-items: center; }
+
+      .go-input-container { width: 100%; margin: 5px 0; }
+      .go-input-label { font-size: 9px; margin-bottom: 4px; }
+      .player-name-input { padding: 8px; font-size: 10px; }
+
+      .go-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+        gap: 8px;
+      }
+
+      .btn-retry, .btn-save, .btn-other {
+        padding: 8px 10px;
+        font-size: 10px;
+        flex: 1;
+        min-width: 80px;
+      }
+    }
+
+    /* --- 🏆 LEADERBOARD --- */
+    #leaderboard-screen { background: rgba(0,0,0,0.95); }
+    .leaderboard-title { color: #ffd700; font-size: 24px; margin-bottom: 30px; text-shadow: 4px 4px #f00; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .leaderboard-list { background: rgba(0,0,0,0.8); border: 4px solid #0ff; padding: 20px; min-width: 300px; max-width: 90vw; font-size: 11px; line-height: 2.2; box-shadow: 0 0 20px rgba(0,255,255,0.3); }
+    .leaderboard-entry { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 2px solid #333; animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    .leaderboard-entry:nth-child(1) { color: #ffd700; font-size: 14px; text-shadow: 2px 2px #f00; border-bottom: 3px solid #ffd700; }
+    .leaderboard-entry:nth-child(2) { color: #c0c0c0; font-size: 13px; }
+    .leaderboard-entry:nth-child(3) { color: #cd7f32; font-size: 13px; }
+    .leaderboard-entry:nth-child(n+4) { color: #fff; }
+    .rank-btn { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; border: 4px solid #fff; padding: 12px 20px; font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer; box-shadow: 4px 4px 0 #005555; margin-top: 15px; transition: transform 0.1s; }
+    .rank-btn:hover { transform: scale(1.05); }
+    .rank-btn:active { transform: scale(0.95); }
+    .loading-text { color: #0ff; font-size: 12px; margin: 20px 0; animation: blink 1s infinite; }
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.3; } }
+
+    /* --- NOTIFICACIÓN HTML --- */
     #html-notification {
       position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0);
       font-size: 48px; font-weight: bold; text-align: center; pointer-events: none; z-index: 500;
@@ -81,35 +244,13 @@
       80% { opacity: 1; }
       100% { transform: translate(-50%, -60%) scale(1.1); opacity: 0; }
     }
-
-    /* 🏆 NUEVOS ESTILOS PARA LEADERBOARD */
-    #leaderboard-screen { background: rgba(0,0,0,0.95); }
-    .leaderboard-title { color: #ffd700; font-size: 24px; margin-bottom: 30px; text-shadow: 4px 4px #f00; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-    .leaderboard-list { background: rgba(0,0,0,0.8); border: 4px solid #0ff; padding: 20px; min-width: 300px; max-width: 90vw; font-size: 11px; line-height: 2.2; box-shadow: 0 0 20px rgba(0,255,255,0.3); }
-    .leaderboard-entry { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 2px solid #333; animation: slideIn 0.3s ease-out; }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-    .leaderboard-entry:nth-child(1) { color: #ffd700; font-size: 14px; text-shadow: 2px 2px #f00; border-bottom: 3px solid #ffd700; }
-    .leaderboard-entry:nth-child(2) { color: #c0c0c0; font-size: 13px; }
-    .leaderboard-entry:nth-child(3) { color: #cd7f32; font-size: 13px; }
-    .leaderboard-entry:nth-child(n+4) { color: #fff; }
-    
-    .player-name-input { background: #1a1a1a; border: 4px solid #0ff; color: #fff; padding: 12px; font-family: 'Press Start 2P'; font-size: 14px; text-align: center; width: 220px; text-transform: uppercase; outline: none; image-rendering: pixelated; margin: 15px 0; }
-    .player-name-input::placeholder { color: #555; }
-    .player-name-input:focus { border-color: #ff0; box-shadow: 0 0 15px rgba(0,255,255,0.5); }
-    
-    .rank-btn { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; border: 4px solid #fff; padding: 12px 20px; font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer; box-shadow: 4px 4px 0 #005555; margin-top: 15px; transition: transform 0.1s; }
-    .rank-btn:hover { transform: scale(1.05); }
-    .rank-btn:active { transform: scale(0.95); }
-    .loading-text { color: #0ff; font-size: 12px; margin: 20px 0; animation: blink 1s infinite; }
-    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.3; } }
   </style>
 </head>
 <body>
+  
+  <!-- MENÚ PRINCIPAL (CARRUSEL) -->
   <div id="menu" class="screen">
     <h1>ALMACÉN RUNNER</h1>
-    
-    <!-- 🆕 CARRUSEL DE TOROS -->
     <div class="carousel-section">
       <div class="carousel-label">👆 ELIGE TU TORO</div>
       <div class="carousel-viewport">
@@ -121,11 +262,11 @@
         <button class="nav-arrow" id="nextBtn">▶</button>
       </div>
     </div>
-
     <p style="color:#aaa; margin-top:10px; font-size:10px;">RÉCORD: <span id="menu-high-score">0</span></p>
     <button class="rank-btn" id="rankBtn">🏆 RANKING</button>
   </div>
   
+  <!-- PANTALLA RADIO -->
   <div id="radio-screen" class="screen hidden">
     <h2>PILOTO LISTO</h2>
     <img id="radio-img" src="radio.png" alt="Radio">
@@ -133,29 +274,50 @@
     <button class="play-btn" id="playBtn">▶ PLAY</button>
   </div>
   
+  <!-- PANTALLA GAME OVER (NUEVO DISEÑO) -->
   <div id="game-over-screen">
-    <div class="go-title">GAME OVER</div>
-    <div class="go-score">PUNTOS: <span id="go-score-val">0</span></div>
-    <div class="go-best">MEJOR: <span id="go-best-val">0</span></div>
-    <div id="name-input-container" style="margin: 20px 0; text-align: center;">
-      <p style="color: #0ff; font-size: 11px; margin-bottom: 10px; line-height: 1.5;">¡NUEVO RÉCORD!<br>Introduce tu nombre:</p>
-      <input type="text" id="player-name" class="player-name-input" maxlength="10" placeholder="TU NOMBRE">
+    <div class="go-card">
+      <h1 class="go-title">GAME OVER</h1>
+      
+      <div class="go-stats-row">
+        <div class="go-stat">
+          <span class="label">PUNTOS</span>
+          <span class="value" id="go-score-val">0</span>
+        </div>
+        <div class="go-stat">
+          <span class="label">MEJOR</span>
+          <span class="value" id="go-best-val">0</span>
+        </div>
+      </div>
+
+      <div class="go-input-container" id="name-input-container">
+        <label class="go-input-label">¡NUEVO RÉCORD!<br>Introduce tu nombre:</label>
+        <input type="text" id="player-name" class="player-name-input" maxlength="10" placeholder="TU NOMBRE">
+      </div>
+
+      <div class="go-actions">
+        <button class="btn-save" id="saveScoreBtn">💾 GUARDAR</button>
+        <button class="btn-retry" id="restartBtn">🔄 REINTENTAR</button>
+        <button class="btn-other" id="otherCarBtn">o prueba con otro toro 🐂</button>
+      </div>
     </div>
-    <button class="restart-btn" id="saveScoreBtn">💾 GUARDAR</button>
-    <button class="restart-btn" id="restartBtn" style="margin-top: 10px;">🔄 REINTENTAR</button>
-    <button class="other-car-btn" id="otherCarBtn">o prueba con otro toro 🐂</button>
   </div>
   
+  <!-- PANTALLA LEADERBOARD -->
   <div id="leaderboard-screen" class="screen hidden">
     <h2 class="leaderboard-title">🏆 TOP 10 🏆</h2>
     <div id="leaderboard-list" class="leaderboard-list">
       <div class="loading-text">Cargando rankings...</div>
     </div>
-    <button class="restart-btn" id="backToMenuBtn" style="margin-top: 20px;">⬅ VOLVER</button>
+    <button class="restart-btn" id="backToMenuBtn" style="margin-top: 20px; background: #fff; color: #000; border: 4px solid #0ff; padding: 12px 18px; font-family: 'Press Start 2P'; font-size: 13px; cursor: pointer; box-shadow: 4px 4px 0 #005500;">⬅ VOLVER</button>
   </div>
   
   <canvas id="game"></canvas>
+  
+  <!-- NOTIFICACIÓN HTML (Optimizada) -->
   <div id="html-notification"></div>
+  
+  <!-- UI DEL JUEGO -->
   <div id="ui" class="hidden">
     <div id="score-display">PTS: 0</div>
     <div id="high-score-display">BEST: 0</div>
@@ -395,6 +557,7 @@
     bankedScore = 0; finalScore = 0;
     floatingTexts = []; particles = []; lastCheckpoint = 0; lastDisplayedScore = -1;
     localStorage.removeItem('c1_session_checkpoint');
+    document.getElementById('player-name').value = ''; // Limpiar input
     document.getElementById('radio-screen').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('active');
     document.getElementById('ui').classList.remove('hidden'); document.getElementById('mobile-controls').classList.remove('hidden');
     document.getElementById('audioControls').classList.remove('hidden'); document.getElementById('powerup-display').classList.remove('active');
