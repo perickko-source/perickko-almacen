@@ -286,6 +286,7 @@
     }, (error) => { document.getElementById('leaderboard-list').innerHTML = '<div style="color: #f00;">Error al cargar</div>'; });
   }
 
+  // ✅ FUNCIÓN PARA CARGAR EL RÉCORD GLOBAL DESDE FIREBASE
   function loadGlobalHighScore() {
     const scoresRef = ref(db, 'scores');
     const topQuery = query(scoresRef, orderByChild('score'), limitToLast(1));
@@ -294,7 +295,9 @@
       if (data) {
         const scores = Object.values(data);
         const top = scores[0];
+        // Actualizar el texto del récord en el menú
         document.getElementById('menu-high-score').innerText = `${top.name} - ${numFmt.format(top.score)}`;
+        // Guardar también en localStorage como fallback
         localStorage.setItem('c1_highscore', top.score);
       } else {
         document.getElementById('menu-high-score').innerText = '0';
@@ -372,7 +375,6 @@
   function drawParticles(){ for(let p of particles){ let alpha=Math.max(0,p.life/p.maxLife); if(p.type==='fire'||p.type==='spark'){ ctx.globalCompositeOperation='lighter'; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*2.5); if(p.type==='fire'){g.addColorStop(0,`rgba(255,255,220,${alpha})`);g.addColorStop(0.25,`rgba(255,200,50,${alpha*0.9})`);g.addColorStop(0.6,`rgba(255,100,20,${alpha*0.6})`);g.addColorStop(1,`rgba(200,30,0,0)`);} else{g.addColorStop(0,`rgba(255,255,255,${alpha})`);g.addColorStop(0.4,`rgba(255,220,80,${alpha*0.7})`);g.addColorStop(1,`rgba(255,150,0,0)`);} ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(1+(1-alpha)*0.8),0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over'; }else if(p.type==='smoke'){ctx.fillStyle=`rgba(180,180,180,${alpha*0.5})`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();} } }
 
   const WHEEL_CONFIG = { frontX: 40, y: 82, radius: 27, rimRadius: 14 };
-  // ✅ AÑADIDOS NUEVOS TOROS (Ferran, Joel, Vicky)
   const ALL_CARS = [
     {name:'Kiko', file:'kiko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Perickko', file:'perickko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
@@ -392,13 +394,8 @@
     {name:'Jordi', file:'jordi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Tinoco', file:'tinoco.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Andres', file:'andres.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Xisc1', file:'xisc1.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    // NUEVOS:
-    {name:'Ferran', file:'ferran.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Joel', file:'joel.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Vicky', file:'vicky.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
+    {name:'Xisc1', file:'xisc1.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
   ];
-  
   const OBSTACLE_CARS = [ { name: 'camion-lopez', file: 'camion-lopez.png', music: 'camion-lopez.ogg', sound: 'camion-lopez' }, { name: 'volquete', file: 'volquete.png', music: 'volquete.ogg', sound: 'volquete' } ];
   const TRUCK_W = 650, TRUCK_H = 429, VOLQUETE_SCALE = 0.6;
   const images = {}; [...ALL_CARS, ...OBSTACLE_CARS].forEach(c => { const i = new Image(); i.src = c.file; images[c.file] = i; });
@@ -423,7 +420,7 @@
   function drawPowerup(powerup) { ctx.save();ctx.translate(powerup.x,powerup.y); const pulse=(Math.sin(Date.now()/100+powerup.offset)+1)/2; const scale=1+pulse*0.2;ctx.scale(scale,scale); let color,icon; if(powerup.type==='shield'){color='#00ccff';icon='🛡️';} else if(powerup.type==='turbo'){color='#ff4400';icon='⚡';} else {color='#ffd700';icon='✨';} ctx.shadowColor=color;ctx.shadowBlur=20; ctx.fillStyle=color;ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(0,0,35,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1; ctx.font='bold 30px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=color;ctx.fillText(icon,0,0); ctx.restore(); }
 
   function initMenu() { 
-    loadGlobalHighScore();
+    loadGlobalHighScore(); // ✅ CARGA EL RÉCORD DE FIREBASE AL INICIAR
     const track = document.getElementById('car-options');
     const dotsContainer = document.getElementById('pageDots');
     track.innerHTML = '';
@@ -481,7 +478,7 @@
     document.getElementById('ui').classList.add('hidden'); document.getElementById('mobile-controls').classList.add('hidden'); 
     document.getElementById('game-over-screen').classList.remove('active'); document.getElementById('menu').classList.remove('hidden'); 
     document.getElementById('powerup-display').classList.remove('active'); 
-    loadGlobalHighScore();
+    loadGlobalHighScore(); // ✅ ACTUALIZA EL RÉCORD AL VOLVER AL MENÚ
   }
   document.getElementById('otherCarBtn').addEventListener('click', goToMenu);
   document.getElementById('otherCarBtn').addEventListener('touchstart', (e) => { e.preventDefault(); goToMenu(); });
