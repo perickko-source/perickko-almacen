@@ -12,12 +12,10 @@
     html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; position: fixed; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; }
     canvas { image-rendering: pixelated; display: block; }
     
-    /* --- PANTALLAS GENERALES --- */
     .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
     .screen.hidden { display: none; }
     h1 { color: #fff; font-size: 22px; margin-bottom: 20px; text-shadow: 4px 4px #0ff; text-transform: uppercase; text-align: center; padding: 0 15px; line-height: 1.5; }
     
-    /* --- CARRUSEL HORIZONTAL (Menú Principal) --- */
     .carousel-section { width: 100%; max-width: 95vw; margin-bottom: 15px; text-align: center; }
     .carousel-label { font-size: 10px; color: #0ff; margin-bottom: 8px; }
     .carousel-viewport { overflow: hidden; position: relative; padding: 5px 0; }
@@ -36,14 +34,12 @@
     .page-dot { width: 8px; height: 8px; border-radius: 50%; background: #333; transition: all 0.2s; }
     .page-dot.active { background: #0ff; transform: scale(1.3); }
 
-    /* --- RADIO SCREEN --- */
     #radio-screen h2 { color: #ffaa00; font-size: 18px; margin: 20px 0; text-shadow: 2px 2px #f00; }
     #radio-screen p { color: #aaa; font-size: 11px; margin-bottom: 25px; text-align: center; line-height: 1.5; }
     #radio-img { width: 180px; margin-bottom: 20px; border: 4px solid #fff; image-rendering: pixelated; }
     .play-btn { background: #0ff; color: #000; border: 4px solid #fff; padding: 15px 25px; font-family: 'Press Start 2P', cursive; font-size: 14px; cursor: pointer; box-shadow: 4px 4px 0 #005555; text-transform: uppercase; }
     .play-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #005555; }
-
-    /* --- UI DEL JUEGO --- */
+    
     #ui { position: fixed; top: max(10px, env(safe-area-inset-top)); right: 10px; color: #fff; font-size: 13px; text-shadow: 2px 2px #000; pointer-events: none; z-index: 100; text-align: right; line-height: 1.7; background: rgba(0,0,0,0.7); padding: 8px 12px; border: 2px solid #0ff; border-radius: 6px; max-width: 45vw; }
     #speed { color: #0ff; font-size: 18px; }
     #score-display { color: #ffd700; font-size: 14px; }
@@ -63,157 +59,88 @@
     #fullscreenBtn { position: fixed; top: 85px; left: 10px; z-index: 100; background: #000; border: 2px solid #0ff; color: #0ff; padding: 6px 10px; font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer; }
     @media (max-width: 768px) { #fullscreenBtn { display: block; } }
 
-    /* --- 🎮 NUEVO DISEÑO GAME OVER (RESPONSIVE) --- */
+    /* 🎮 PANTALLA GAME OVER ADAPTATIVA */
     #game-over-screen {
       position: fixed;
       top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.98); /* Fondo casi negro sólido */
+      width: 100%;
+      height: 100vh;
+      background: rgba(0,0,0,0.95);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 3000;
       padding: 10px;
       box-sizing: border-box;
+      overflow: hidden;
     }
     #game-over-screen.active { display: flex; }
 
     .go-card {
-      background: #1a1a1a;
-      border: 4px solid #fff;
-      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      background: #111;
+      border: 2px solid #0ff; /* ✅ BORDE CIAN EN VEZ DE BLANCO */
+      box-shadow: 0 0 20px rgba(0,255,255,0.2);
       padding: 20px;
       border-radius: 12px;
       width: 100%;
-      max-width: 450px;
+      max-width: 400px;
       max-height: 95vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 12px;
       overflow-y: auto;
+      overflow-x: hidden;
       animation: pop-in 0.3s ease-out;
     }
 
     @keyframes pop-in {
-      from { transform: scale(0.8); opacity: 0; }
+      from { transform: scale(0.9); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
 
-    .go-title {
-      font-size: 28px;
-      color: #f00;
-      text-shadow: 4px 4px #000;
-      margin: 0;
-      line-height: 1.2;
-    }
-
-    .go-stats-row {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      gap: 10px;
-      background: #000;
-      padding: 15px;
-      border: 2px solid #333;
-      border-radius: 8px;
-    }
-
-    .go-stat {
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-    }
-    .go-stat .label { color: #aaa; }
+    .go-title { font-size: 28px; color: #f00; text-shadow: 4px 4px #000; margin: 0; line-height: 1.2; }
+    .go-stats-row { display: flex; flex-direction: column; width: 100%; gap: 10px; background: #000; padding: 12px; border: 1px solid #333; border-radius: 8px; }
+    .go-stat { display: flex; justify-content: space-between; font-size: 14px; }
+    .go-stat .label { color: #888; text-transform: uppercase; font-size: 11px; }
     .go-stat .value { color: #ffd700; font-weight: bold; }
-
     .go-input-container { width: 100%; text-align: center; }
-    .go-input-label { display: block; color: #0ff; font-size: 11px; margin-bottom: 8px; line-height: 1.4; }
-
+    .go-input-label { display: block; color: #0ff; font-size: 10px; margin-bottom: 6px; line-height: 1.4; }
     .player-name-input {
-      width: 100%;
-      box-sizing: border-box;
-      background: #222;
-      border: 3px solid #0ff;
-      color: #fff;
-      padding: 10px;
-      font-family: 'Press Start 2P';
-      font-size: 12px;
-      text-align: center;
-      text-transform: uppercase;
-      outline: none;
-      border-radius: 4px;
+      width: 100%; box-sizing: border-box; background: #1a1a1a; border: 2px solid #0ff; color: #fff;
+      padding: 10px; font-family: 'Press Start 2P'; font-size: 12px; text-align: center;
+      text-transform: uppercase; outline: none; border-radius: 4px;
     }
-    .player-name-input:focus { border-color: #ff0; background: #333; }
-
-    .go-actions { display: flex; flex-direction: column; width: 100%; gap: 10px; }
-
+    .player-name-input:focus { border-color: #fff; background: #222; }
+    .go-actions { display: flex; flex-direction: column; width: 100%; gap: 8px; }
     .btn-retry {
-      background: #0f0; color: #000; border: none; padding: 12px;
-      font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;
-      border-radius: 4px; box-shadow: 0 4px 0 #005500; text-transform: uppercase;
+      background: #0f0; color: #000; border: none; padding: 12px; font-family: 'Press Start 2P';
+      font-size: 11px; cursor: pointer; border-radius: 4px; box-shadow: 0 4px 0 #005500; text-transform: uppercase;
     }
     .btn-retry:active { transform: translateY(4px); box-shadow: none; }
-
     .btn-save {
-      background: #0ff; color: #000; border: none; padding: 12px;
-      font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;
-      border-radius: 4px; box-shadow: 0 4px 0 #005555; text-transform: uppercase;
+      background: #0ff; color: #000; border: none; padding: 12px; font-family: 'Press Start 2P';
+      font-size: 11px; cursor: pointer; border-radius: 4px; box-shadow: 0 4px 0 #005555; text-transform: uppercase;
     }
     .btn-save:active { transform: translateY(4px); box-shadow: none; }
-
     .btn-other {
-      background: transparent; color: #888; border: 2px solid #444; padding: 8px;
-      font-family: 'Press Start 2P'; font-size: 10px; cursor: pointer; border-radius: 4px;
+      background: transparent; color: #666; border: 2px solid #333; padding: 8px; font-family: 'Press Start 2P';
+      font-size: 9px; cursor: pointer; border-radius: 4px; text-transform: uppercase;
     }
-    .btn-other:hover { color: #fff; border-color: #fff; }
+    .btn-other:hover { color: #fff; border-color: #0ff; }
 
-    /* 📱 MODO HORIZONTAL (LANDSCAPE) - ADAPTATIVO */
     @media (orientation: landscape) and (max-height: 500px) {
-      .go-card {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-content: center;
-        justify-content: center;
-        padding: 10px;
-        max-width: 90vw;
-        height: auto;
-        max-height: 90vh;
-      }
-
-      .go-title { width: 100%; font-size: 18px; margin-bottom: 5px; }
-
-      .go-stats-row {
-        flex-direction: row;
-        padding: 8px;
-        width: auto;
-        min-width: 300px;
-        flex: 1;
-      }
-      
-      .go-stat { font-size: 11px; flex-direction: column; align-items: center; }
-
+      .go-card { flex-direction: row; flex-wrap: wrap; align-content: center; justify-content: center; padding: 10px; max-width: 90vw; height: auto; max-height: 90vh; }
+      .go-title { width: 100%; font-size: 16px; margin-bottom: 5px; }
+      .go-stats-row { flex-direction: row; padding: 8px; width: auto; min-width: 280px; flex: 1; }
+      .go-stat { font-size: 10px; flex-direction: column; align-items: center; justify-content: center; }
       .go-input-container { width: 100%; margin: 5px 0; }
-      .go-input-label { font-size: 9px; margin-bottom: 4px; }
-      .player-name-input { padding: 8px; font-size: 10px; }
-
-      .go-actions {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        width: 100%;
-        gap: 8px;
-      }
-
-      .btn-retry, .btn-save, .btn-other {
-        padding: 8px 10px;
-        font-size: 10px;
-        flex: 1;
-        min-width: 80px;
-      }
+      .go-input-label { font-size: 8px; margin-bottom: 3px; }
+      .player-name-input { padding: 6px; font-size: 10px; }
+      .go-actions { flex-direction: row; flex-wrap: wrap; justify-content: center; width: 100%; gap: 6px; }
+      .btn-retry, .btn-save, .btn-other { padding: 8px 12px; font-size: 9px; flex: 1; min-width: 80px; }
     }
 
-    /* --- 🏆 LEADERBOARD --- */
     #leaderboard-screen { background: rgba(0,0,0,0.95); }
     .leaderboard-title { color: #ffd700; font-size: 24px; margin-bottom: 30px; text-shadow: 4px 4px #f00; animation: pulse 2s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
@@ -230,7 +157,6 @@
     .loading-text { color: #0ff; font-size: 12px; margin: 20px 0; animation: blink 1s infinite; }
     @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.3; } }
 
-    /* --- NOTIFICACIÓN HTML --- */
     #html-notification {
       position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0);
       font-size: 48px; font-weight: bold; text-align: center; pointer-events: none; z-index: 500;
@@ -248,7 +174,6 @@
 </head>
 <body>
   
-  <!-- MENÚ PRINCIPAL (CARRUSEL) -->
   <div id="menu" class="screen">
     <h1>ALMACÉN RUNNER</h1>
     <div class="carousel-section">
@@ -266,7 +191,6 @@
     <button class="rank-btn" id="rankBtn">🏆 RANKING</button>
   </div>
   
-  <!-- PANTALLA RADIO -->
   <div id="radio-screen" class="screen hidden">
     <h2>PILOTO LISTO</h2>
     <img id="radio-img" src="radio.png" alt="Radio">
@@ -274,11 +198,9 @@
     <button class="play-btn" id="playBtn">▶ PLAY</button>
   </div>
   
-  <!-- PANTALLA GAME OVER (NUEVO DISEÑO) -->
   <div id="game-over-screen">
     <div class="go-card">
       <h1 class="go-title">GAME OVER</h1>
-      
       <div class="go-stats-row">
         <div class="go-stat">
           <span class="label">PUNTOS</span>
@@ -289,12 +211,10 @@
           <span class="value" id="go-best-val">0</span>
         </div>
       </div>
-
       <div class="go-input-container" id="name-input-container">
         <label class="go-input-label">¡NUEVO RÉCORD!<br>Introduce tu nombre:</label>
         <input type="text" id="player-name" class="player-name-input" maxlength="10" placeholder="TU NOMBRE">
       </div>
-
       <div class="go-actions">
         <button class="btn-save" id="saveScoreBtn">💾 GUARDAR</button>
         <button class="btn-retry" id="restartBtn">🔄 REINTENTAR</button>
@@ -303,7 +223,6 @@
     </div>
   </div>
   
-  <!-- PANTALLA LEADERBOARD -->
   <div id="leaderboard-screen" class="screen hidden">
     <h2 class="leaderboard-title">🏆 TOP 10 🏆</h2>
     <div id="leaderboard-list" class="leaderboard-list">
@@ -313,11 +232,7 @@
   </div>
   
   <canvas id="game"></canvas>
-  
-  <!-- NOTIFICACIÓN HTML (Optimizada) -->
   <div id="html-notification"></div>
-  
-  <!-- UI DEL JUEGO -->
   <div id="ui" class="hidden">
     <div id="score-display">PTS: 0</div>
     <div id="high-score-display">BEST: 0</div>
@@ -335,7 +250,6 @@
   <div id="brake-indicator">🛑 FRENO</div>
 
 <script type="module">
-  // 🔥 FIREBASE CONFIGURATION
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
   import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
@@ -370,6 +284,25 @@
       let html = ''; scores.forEach((entry, index) => { html += `<div class="leaderboard-entry"><span>${index + 1}. ${entry.name}</span><span>${numFmt.format(entry.score)}</span></div>`; });
       leaderboardList.innerHTML = html;
     }, (error) => { document.getElementById('leaderboard-list').innerHTML = '<div style="color: #f00;">Error al cargar</div>'; });
+  }
+
+  // ✅ FUNCIÓN PARA CARGAR EL RÉCORD GLOBAL DESDE FIREBASE
+  function loadGlobalHighScore() {
+    const scoresRef = ref(db, 'scores');
+    const topQuery = query(scoresRef, orderByChild('score'), limitToLast(1));
+    onValue(topQuery, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const scores = Object.values(data);
+        const top = scores[0];
+        // Actualizar el texto del récord en el menú
+        document.getElementById('menu-high-score').innerText = `${top.name} - ${numFmt.format(top.score)}`;
+        // Guardar también en localStorage como fallback
+        localStorage.setItem('c1_highscore', top.score);
+      } else {
+        document.getElementById('menu-high-score').innerText = '0';
+      }
+    });
   }
 
   function showLeaderboard() { document.getElementById('menu').classList.add('hidden'); document.getElementById('leaderboard-screen').classList.remove('hidden'); loadLeaderboard(); }
@@ -478,7 +411,6 @@
   let turboCount=0, x2Count=0, shieldTime=0, score=0;
   let bankedScore = 0;
   let highScore = parseInt(localStorage.getItem('c1_highscore') || '0');
-  document.getElementById('menu-high-score').innerText = numFmt.format(highScore);
   let lastCheckpoint = 0, lastUIUpdate = 0, lastDisplayedScore = -1;
 
   function drawDiagonalBorders() { const BORDER_H = 19, STRIPE_W = 38, period = STRIPE_W * 2, shift = roadOffset % period; ctx.save(); ctx.lineWidth = STRIPE_W; function drawStripes(y) { ctx.beginPath(); ctx.rect(0, y, W, BORDER_H); ctx.clip(); const count = Math.ceil(W / period) + 3; ctx.beginPath(); ctx.strokeStyle = '#8B0000'; for(let i = -2; i < count; i++) { let x = i * period - shift; ctx.moveTo(x, y); ctx.lineTo(x + BORDER_H, y + BORDER_H); } ctx.stroke(); ctx.beginPath(); ctx.strokeStyle = '#555555'; for(let i = -2; i < count; i++) { let x = i * period + STRIPE_W - shift; ctx.moveTo(x, y); ctx.lineTo(x + BORDER_H, y + BORDER_H); } ctx.stroke(); } drawStripes(ROAD_Y - LANE_HEIGHT - BORDER_H); ctx.restore(); }
@@ -487,8 +419,8 @@
   function drawBox(box) { ctx.save(); ctx.translate(box.x, box.y); const pulse = (Math.sin(Date.now() / 150) + 1) / 2; ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-box.w/2 + 4, -box.h/2 + 4, box.w, box.h); const boxGrad = ctx.createLinearGradient(-box.w/2, -box.h/2, box.w/2, box.h/2); boxGrad.addColorStop(0, '#c4956a'); boxGrad.addColorStop(0.5, '#b8845c'); boxGrad.addColorStop(1, '#a67549'); ctx.fillStyle = boxGrad; ctx.fillRect(-box.w/2, -box.h/2, box.w, box.h); ctx.strokeStyle = '#8b6040'; ctx.lineWidth = 2; ctx.strokeRect(-box.w/2, -box.h/2, box.w, box.h); ctx.fillStyle = '#c99e74'; ctx.beginPath(); ctx.moveTo(-box.w/2, -box.h/2); ctx.lineTo(0, -box.h/2 + 10); ctx.lineTo(box.w/2, -box.h/2); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#8b6040'; ctx.stroke(); ctx.strokeStyle = 'rgba(200,200,200,0.7)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, -box.h/2 + 5); ctx.lineTo(0, box.h/2 - 5); ctx.moveTo(-box.w/2 + 5, 0); ctx.lineTo(box.w/2 - 5, 0); ctx.stroke(); ctx.fillStyle = '#f5f0e8'; ctx.fillRect(-box.w/2 + 8, -box.h/2 + 15, box.w - 16, 16); ctx.fillStyle = '#333'; for (let i = 0; i < 8; i++) { ctx.fillRect(-box.w/2 + 12 + i * (box.w/10), -box.h/2 + 18, 1 + Math.floor(Math.random() * 2), 10); } ctx.fillStyle = '#8b6040'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.fillText('⬆', 0, box.h/2 - 8); ctx.shadowColor = '#c4956a'; ctx.shadowBlur = 8 + pulse * 6; ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(-box.w/2, -box.h/2, box.w/3, box.h); ctx.restore(); }
   function drawPowerup(powerup) { ctx.save();ctx.translate(powerup.x,powerup.y); const pulse=(Math.sin(Date.now()/100+powerup.offset)+1)/2; const scale=1+pulse*0.2;ctx.scale(scale,scale); let color,icon; if(powerup.type==='shield'){color='#00ccff';icon='🛡️';} else if(powerup.type==='turbo'){color='#ff4400';icon='⚡';} else {color='#ffd700';icon='✨';} ctx.shadowColor=color;ctx.shadowBlur=20; ctx.fillStyle=color;ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(0,0,35,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1; ctx.font='bold 30px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=color;ctx.fillText(icon,0,0); ctx.restore(); }
 
-  // 🆕 INICIALIZACIÓN DEL CARRUSEL
   function initMenu() { 
+    loadGlobalHighScore(); // ✅ CARGA EL RÉCORD DE FIREBASE AL INICIAR
     const track = document.getElementById('car-options');
     const dotsContainer = document.getElementById('pageDots');
     track.innerHTML = '';
@@ -502,8 +434,6 @@
         document.querySelectorAll('.carousel-car').forEach(c => c.classList.remove('selected'));
         item.classList.add('selected');
         selectedCar = car;
-        
-        // ✅ TRANSICIÓN A LA PANTALLA DE RADIO
         document.getElementById('menu').classList.add('hidden');
         document.getElementById('radio-screen').classList.remove('hidden');
       });
@@ -522,7 +452,7 @@
     document.getElementById('nextBtn').onclick = () => scrollCarousel(1);
 
     function scrollCarousel(dir) {
-      const itemWidth = 97; // 85px + 12px gap
+      const itemWidth = 97;
       track.scrollBy({ left: dir * itemWidth * itemsPerView, behavior: 'smooth' });
       setTimeout(updateDots, 300);
     }
@@ -542,7 +472,14 @@
   document.getElementById('playBtn').addEventListener('touchstart',(e)=>{e.preventDefault();startGame();});
   document.getElementById('restartBtn').addEventListener('click',startGame);
 
-  function goToMenu() { AudioSys.stopMusic(); gameActive=false; selectedCar=null; extraLives=3; collectedStars=0; score=0; roadOffset=0; turboCount=0; x2Count=0; shieldTime=0; lastCheckpoint=0; stars=[]; boxes=[]; powerups=[]; obstacles=[]; particles=[]; floatingTexts=[]; document.getElementById('ui').classList.add('hidden'); document.getElementById('mobile-controls').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('active'); document.getElementById('menu').classList.remove('hidden'); document.getElementById('powerup-display').classList.remove('active'); document.getElementById('menu-high-score').innerText = numFmt.format(highScore); localStorage.setItem('c1_highscore', highScore); }
+  function goToMenu() { 
+    AudioSys.stopMusic(); gameActive=false; selectedCar=null; extraLives=3; collectedStars=0; score=0; roadOffset=0; 
+    turboCount=0; x2Count=0; shieldTime=0; lastCheckpoint=0; stars=[]; boxes=[]; powerups=[]; obstacles=[]; particles=[]; floatingTexts=[]; 
+    document.getElementById('ui').classList.add('hidden'); document.getElementById('mobile-controls').classList.add('hidden'); 
+    document.getElementById('game-over-screen').classList.remove('active'); document.getElementById('menu').classList.remove('hidden'); 
+    document.getElementById('powerup-display').classList.remove('active'); 
+    loadGlobalHighScore(); // ✅ ACTUALIZA EL RÉCORD AL VOLVER AL MENÚ
+  }
   document.getElementById('otherCarBtn').addEventListener('click', goToMenu);
   document.getElementById('otherCarBtn').addEventListener('touchstart', (e) => { e.preventDefault(); goToMenu(); });
 
@@ -557,7 +494,7 @@
     bankedScore = 0; finalScore = 0;
     floatingTexts = []; particles = []; lastCheckpoint = 0; lastDisplayedScore = -1;
     localStorage.removeItem('c1_session_checkpoint');
-    document.getElementById('player-name').value = ''; // Limpiar input
+    document.getElementById('player-name').value = '';
     document.getElementById('radio-screen').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('active');
     document.getElementById('ui').classList.remove('hidden'); document.getElementById('mobile-controls').classList.remove('hidden');
     document.getElementById('audioControls').classList.remove('hidden'); document.getElementById('powerup-display').classList.remove('active');
@@ -615,9 +552,9 @@
       if(o.isRamp && !player.isJumping && player.lane===o.lane){ if(Math.abs(player.x-o.x)<140){ player.isJumping=true; if(o.isStunt){player.jumpVel=26;player.jumpAngle=-0.8;} else{player.jumpVel=16;player.jumpAngle=-0.6;} score += 100; spawnFloatingText(player.x, player.y-80, "JUMP! +100", "#ffaa00"); AudioSys.playJump(); cleanupAudio(o); obstacles.splice(i,1); continue; } }
       if(!o.isRamp && player.lane===o.lane && Math.abs(player.x-o.x)<269){
         if(shieldTime > 0){ shieldTime -= 3000; if(shieldTime <= 0) updatePowerupUI(); cleanupAudio(o); obstacles.splice(i,1); ctx.fillStyle='rgba(0,204,255,0.3)';ctx.fillRect(0,0,W,H); spawnFloatingText(player.x, player.y-50, "BLOCKED!", "#00ccff"); continue; }
-        if(o.isBoar){ cleanupAudio(o); let ptsNow = Math.trunc(score * Math.pow(2, x2Count)); bankedScore += ptsNow; score = 0; x2Count = 0; spawnFloatingText(player.x, player.y-50, "CRASH!", "#f00"); if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);} obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives)); if(extraLives === 1) showPowerUpNotification('warning'); if (extraLives <= 0) { finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count)); if (finalScore > highScore) { highScore = finalScore; localStorage.setItem('c1_highscore', highScore); } document.getElementById('go-score-val').innerText = numFmt.format(finalScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; } continue; }
+        if(o.isBoar){ cleanupAudio(o); let ptsNow = Math.trunc(score * Math.pow(2, x2Count)); bankedScore += ptsNow; score = 0; x2Count = 0; spawnFloatingText(player.x, player.y-50, "CRASH!", "#f00"); if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);} obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives)); if(extraLives === 1) showPowerUpNotification('warning'); if (extraLives <= 0) { finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count)); if (finalScore > highScore) { highScore = finalScore; } document.getElementById('go-score-val').innerText = numFmt.format(finalScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; } continue; }
         if(player.isJumping && player.jumpY > 70){ if(!o.scored){ score += 50; spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); o.scored = true; } continue; }
-        score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH!", "#f00"); let ptsNow = Math.trunc(score * Math.pow(2, x2Count)); bankedScore += ptsNow; score = 0; x2Count = 0; turboCount = 0; player.maxSpeed = 6; if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);} cleanupAudio(o);obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives)); if(extraLives === 1) showPowerUpNotification('warning'); if (extraLives <= 0) { finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count)); if (finalScore > highScore) { highScore = finalScore; localStorage.setItem('c1_highscore', highScore); } document.getElementById('go-score-val').innerText = numFmt.format(finalScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; }
+        score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH!", "#f00"); let ptsNow = Math.trunc(score * Math.pow(2, x2Count)); bankedScore += ptsNow; score = 0; x2Count = 0; turboCount = 0; player.maxSpeed = 6; if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);} cleanupAudio(o);obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives)); if(extraLives === 1) showPowerUpNotification('warning'); if (extraLives <= 0) { finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count)); if (finalScore > highScore) { highScore = finalScore; } document.getElementById('go-score-val').innerText = numFmt.format(finalScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; }
       }
       if(o.x<-o.w-100){cleanupAudio(o);obstacles.splice(i,1);score+=10;}
     }
@@ -638,7 +575,9 @@
     nameInput.value = '';
   });
 
-  initMenu();generateWarehouse();requestAnimationFrame(loop);
+  initMenu();
+  generateWarehouse();
+  requestAnimationFrame(loop);
 </script>
 </body>
 </html>
