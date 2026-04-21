@@ -12,61 +12,6 @@
     html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; position: fixed; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; }
     canvas { image-rendering: pixelated; display: block; }
     
-    /* 🎬 PANTALLA DE CARGA */
-    #loading-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease-out;
-    }
-    #loading-screen.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-    #loading-screen img {
-      max-width: 80%;
-      max-height: 60%;
-      object-fit: contain;
-      margin-bottom: 40px;
-      animation: fadeIn 0.5s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .loading-bar-container {
-      width: 80%;
-      max-width: 400px;
-      height: 30px;
-      background: #1a1a1a;
-      border: 4px solid #0ff;
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,255,255,0.3);
-    }
-    .loading-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #0ff, #0f0);
-      box-shadow: 0 0 10px rgba(0,255,255,0.5);
-    }
-    .loading-text {
-      color: #0ff;
-      font-size: 12px;
-      margin-top: 15px;
-      animation: blink 1s infinite;
-    }
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0.3; }
-    }
-    
     .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
     .screen.hidden { display: none; }
     h1 { color: #fff; font-size: 22px; margin-bottom: 20px; text-shadow: 4px 4px #0ff; text-transform: uppercase; text-align: center; padding: 0 15px; line-height: 1.5; }
@@ -133,7 +78,7 @@
 
     .go-card {
       background: #111;
-      border: 2px solid #0ff;
+      border: 2px solid #0ff; /* ✅ BORDE CIAN EN VEZ DE BLANCO */
       box-shadow: 0 0 20px rgba(0,255,255,0.2);
       padding: 20px;
       border-radius: 12px;
@@ -229,16 +174,7 @@
 </head>
 <body>
   
-  <!-- 🎬 PANTALLA DE CARGA -->
-  <div id="loading-screen">
-    <img src="portada.png" alt="Almacén Runner">
-    <div class="loading-bar-container">
-      <div class="loading-bar" id="loading-bar"></div>
-    </div>
-    <div class="loading-text">CARGANDO...</div>
-  </div>
-
-  <div id="menu" class="screen hidden">
+  <div id="menu" class="screen">
     <h1>ALMACÉN RUNNER</h1>
     <div class="carousel-section">
       <div class="carousel-label">👆 ELIGE TU TORO</div>
@@ -314,9 +250,8 @@
   <div id="brake-indicator">🛑 FRENO</div>
 
 <script type="module">
-  // 🔥 IMPORTAR 'get' PARA LECTURAS ÚNICAS (OPTIMIZACIÓN)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+  import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD5srQrggOTusr1ytcoNtX1DphtjoUmQb8",
@@ -351,12 +286,10 @@
     }, (error) => { document.getElementById('leaderboard-list').innerHTML = '<div style="color: #f00;">Error al cargar</div>'; });
   }
 
-  // ✅ OPTIMIZADO: Usa 'get' para leer una sola vez y no acumular listeners
   function loadGlobalHighScore() {
     const scoresRef = ref(db, 'scores');
     const topQuery = query(scoresRef, orderByChild('score'), limitToLast(1));
-    // Usamos .get() en lugar de onValue() para evitar fugas de memoria
-    get(topQuery).then((snapshot) => {
+    onValue(topQuery, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const scores = Object.values(data);
@@ -366,8 +299,6 @@
       } else {
         document.getElementById('menu-high-score').innerText = '0';
       }
-    }).catch((error) => {
-        console.error("Error cargando récord:", error);
     });
   }
 
@@ -389,19 +320,8 @@
   const AudioSys = {
     ctx: null, musicEnabled: true, sfxEnabled: true, lastLaneChange: 0, mainMusic: null,
     init() { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-    playMusic(f) { 
-        // ✅ OPTIMIZADO: Limpiar música anterior para liberar memoria
-        if(this.mainMusic){
-            this.mainMusic.pause(); 
-            this.mainMusic.src = ""; 
-            this.mainMusic = null;
-        } 
-        this.mainMusic = new Audio(f);
-        this.mainMusic.loop = true;
-        this.mainMusic.volume = 0.35;
-        if(this.musicEnabled) this.mainMusic.play().catch(e => console.log("Audio play error", e)); 
-    },
-    stopMusic() { if(this.mainMusic){this.mainMusic.pause(); this.mainMusic.src = ""; this.mainMusic=null;} },
+    playMusic(f) { if(this.mainMusic){this.mainMusic.pause();this.mainMusic.currentTime=0;} this.mainMusic=new Audio(f);this.mainMusic.loop=true;this.mainMusic.volume=0.35;if(this.musicEnabled)this.mainMusic.play().catch(e=>console.log("A",e)); },
+    stopMusic() { if(this.mainMusic){this.mainMusic.pause();this.mainMusic=null;} },
     playLaneChange() { if(!this.ctx||!this.sfxEnabled)return; const n=Date.now();if(n-this.lastLaneChange<200)return;this.lastLaneChange=n; const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(400,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(800,this.ctx.currentTime+0.1);g.gain.setValueAtTime(0.1,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.1);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.1); },
     playCollision() { 
       if(!this.ctx) return;
@@ -452,6 +372,7 @@
   function drawParticles(){ for(let p of particles){ let alpha=Math.max(0,p.life/p.maxLife); if(p.type==='fire'||p.type==='spark'){ ctx.globalCompositeOperation='lighter'; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*2.5); if(p.type==='fire'){g.addColorStop(0,`rgba(255,255,220,${alpha})`);g.addColorStop(0.25,`rgba(255,200,50,${alpha*0.9})`);g.addColorStop(0.6,`rgba(255,100,20,${alpha*0.6})`);g.addColorStop(1,`rgba(200,30,0,0)`);} else{g.addColorStop(0,`rgba(255,255,255,${alpha})`);g.addColorStop(0.4,`rgba(255,220,80,${alpha*0.7})`);g.addColorStop(1,`rgba(255,150,0,0)`);} ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(1+(1-alpha)*0.8),0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over'; }else if(p.type==='smoke'){ctx.fillStyle=`rgba(180,180,180,${alpha*0.5})`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();} } }
 
   const WHEEL_CONFIG = { frontX: 40, y: 82, radius: 27, rimRadius: 14 };
+  // ✅ AÑADIDOS NUEVOS TOROS (Ferran, Joel, Vicky)
   const ALL_CARS = [
     {name:'Kiko', file:'kiko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Perickko', file:'perickko.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
@@ -472,6 +393,7 @@
     {name:'Tinoco', file:'tinoco.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Andres', file:'andres.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Xisc1', file:'xisc1.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    // NUEVOS:
     {name:'Ferran', file:'ferran.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Joel', file:'joel.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Vicky', file:'vicky.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
@@ -656,38 +578,9 @@
     nameInput.value = '';
   });
 
-  // 🎬 SIMULACIÓN DE CARGA (10 SEGUNDOS)
-  window.addEventListener('load', () => {
-    const loadingBar = document.getElementById('loading-bar');
-    const loadingScreen = document.getElementById('loading-screen');
-    const menu = document.getElementById('menu');
-    
-    let progress = 0;
-    const duration = 10000; // 10 segundos
-    const intervalTime = 100; // Actualizar cada 100ms
-    const increment = 100 / (duration / intervalTime);
-    
-    const interval = setInterval(() => {
-        progress += increment;
-        
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            loadingBar.style.width = '100%';
-            
-            setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-                menu.classList.remove('hidden');
-                // ✅ INICIAR JUEGO AQUÍ PARA EVITAR DOBLE INICIO
-                initMenu();
-                generateWarehouse();
-                requestAnimationFrame(loop);
-            }, 500);
-        } else {
-            loadingBar.style.width = progress + '%';
-        }
-    }, intervalTime);
-  });
+  initMenu();
+  generateWarehouse();
+  requestAnimationFrame(loop);
 </script>
 </body>
 </html>
