@@ -54,7 +54,6 @@
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, #0ff, #0f0);
-      /* Eliminamos la transición CSS para que el JS controle la velocidad exacta */
       box-shadow: 0 0 10px rgba(0,255,255,0.5);
     }
     .loading-text {
@@ -315,8 +314,9 @@
   <div id="brake-indicator">🛑 FRENO</div>
 
 <script type="module">
+  // 🔥 IMPORTAR 'get' PARA LECTURAS ÚNICAS (OPTIMIZACIÓN)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+  import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD5srQrggOTusr1ytcoNtX1DphtjoUmQb8",
@@ -351,10 +351,12 @@
     }, (error) => { document.getElementById('leaderboard-list').innerHTML = '<div style="color: #f00;">Error al cargar</div>'; });
   }
 
+  // ✅ OPTIMIZADO: Usa 'get' para leer una sola vez y no acumular listeners
   function loadGlobalHighScore() {
     const scoresRef = ref(db, 'scores');
     const topQuery = query(scoresRef, orderByChild('score'), limitToLast(1));
-    onValue(topQuery, (snapshot) => {
+    // Usamos .get() en lugar de onValue() para evitar fugas de memoria
+    get(topQuery).then((snapshot) => {
       const data = snapshot.val();
       if (data) {
         const scores = Object.values(data);
@@ -364,6 +366,8 @@
       } else {
         document.getElementById('menu-high-score').innerText = '0';
       }
+    }).catch((error) => {
+        console.error("Error cargando récord:", error);
     });
   }
 
@@ -385,8 +389,19 @@
   const AudioSys = {
     ctx: null, musicEnabled: true, sfxEnabled: true, lastLaneChange: 0, mainMusic: null,
     init() { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-    playMusic(f) { if(this.mainMusic){this.mainMusic.pause();this.mainMusic.currentTime=0;} this.mainMusic=new Audio(f);this.mainMusic.loop=true;this.mainMusic.volume=0.35;if(this.musicEnabled)this.mainMusic.play().catch(e=>console.log("A",e)); },
-    stopMusic() { if(this.mainMusic){this.mainMusic.pause();this.mainMusic=null;} },
+    playMusic(f) { 
+        // ✅ OPTIMIZADO: Limpiar música anterior para liberar memoria
+        if(this.mainMusic){
+            this.mainMusic.pause(); 
+            this.mainMusic.src = ""; 
+            this.mainMusic = null;
+        } 
+        this.mainMusic = new Audio(f);
+        this.mainMusic.loop = true;
+        this.mainMusic.volume = 0.35;
+        if(this.musicEnabled) this.mainMusic.play().catch(e => console.log("Audio play error", e)); 
+    },
+    stopMusic() { if(this.mainMusic){this.mainMusic.pause(); this.mainMusic.src = ""; this.mainMusic=null;} },
     playLaneChange() { if(!this.ctx||!this.sfxEnabled)return; const n=Date.now();if(n-this.lastLaneChange<200)return;this.lastLaneChange=n; const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(400,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(800,this.ctx.currentTime+0.1);g.gain.setValueAtTime(0.1,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+0.1);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+0.1); },
     playCollision() { 
       if(!this.ctx) return;
@@ -641,7 +656,7 @@
     nameInput.value = '';
   });
 
-  // 🎬 SIMULACIÓN DE CARGA AJUSTADA A 10 SEGUNDOS
+  // 🎬 SIMULACIÓN DE CARGA (10 SEGUNDOS)
   window.addEventListener('load', () => {
     const loadingBar = document.getElementById('loading-bar');
     const loadingScreen = document.getElementById('loading-screen');
@@ -650,7 +665,7 @@
     let progress = 0;
     const duration = 10000; // 10 segundos
     const intervalTime = 100; // Actualizar cada 100ms
-    const increment = 100 / (duration / intervalTime); // Incremento fijo para llegar a 100% en 10s
+    const increment = 100 / (duration / intervalTime);
     
     const interval = setInterval(() => {
         progress += increment;
@@ -660,10 +675,10 @@
             clearInterval(interval);
             loadingBar.style.width = '100%';
             
-            // Esperar medio segundo al 100% antes de entrar
             setTimeout(() => {
                 loadingScreen.classList.add('hidden');
                 menu.classList.remove('hidden');
+                // ✅ INICIAR JUEGO AQUÍ PARA EVITAR DOBLE INICIO
                 initMenu();
                 generateWarehouse();
                 requestAnimationFrame(loop);
