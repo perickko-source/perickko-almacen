@@ -8,8 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <title>Almacén Runner</title>
   <style>
-    * { -webkit-tap-highlight-color: transparent; touch-action: none; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
-    html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; position: fixed; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; }
+    * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+    /* ✅ CORRECCIÓN IMPORTANTE: Permitir scroll táctil general, bloquear solo lo necesario */
+    html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; position: fixed; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; touch-action: none; }
+    
     canvas { image-rendering: pixelated; display: block; }
     
     /* 🎬 PANTALLA DE CARGA */
@@ -26,7 +28,7 @@
     .screen.hidden { display: none; }
     h1 { color: #fff; font-size: 22px; margin-bottom: 20px; text-shadow: 4px 4px #0ff; text-transform: uppercase; text-align: center; padding: 0 15px; line-height: 1.5; }
     
-    /*  CARRUSEL VERSIÓN 3 (Limpio y Elegante) */
+    /*  CARRUSEL VERSIÓN 3 (Limpio y Elegante - CON SCROLL TÁCTIL HABILITADO) */
     .carousel-wrapper { 
       position: relative; width: 100%; max-width: 95vw; margin-bottom: 15px; text-align: center; 
       display: flex; align-items: center; justify-content: center;
@@ -39,6 +41,8 @@
     .carousel-track { 
       display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; 
       -webkit-overflow-scrolling: touch; gap: 12px; padding: 5px 15px; scrollbar-width: none; 
+      /* ✅ ESTA LÍNEA PERMITE MOVER CON EL DEDO */
+      touch-action: pan-x; 
     }
     .carousel-track::-webkit-scrollbar { display: none; }
     .carousel-car { 
