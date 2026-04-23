@@ -610,7 +610,17 @@
       if(!o.isRamp && player.lane===o.lane && Math.abs(player.x-o.x)<269){
         if(shieldTime > 0){ shieldTime -= 3000; if(shieldTime <= 0) updatePowerupUI(); cleanupAudio(o); obstacles.splice(i,1); ctx.fillStyle='rgba(0,204,255,0.3)';ctx.fillRect(0,0,W,H); spawnFloatingText(player.x, player.y-50, "BLOCKED!", "#00ccff"); continue; }
         if(o.isBoar){ cleanupAudio(o); let ptsNow = Math.trunc(score * Math.pow(2, x2Count)); bankedScore += ptsNow; score = 0; x2Count = 0; spawnFloatingText(player.x, player.y-50, "CRASH!", "#f00"); if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);} obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives)); if(extraLives === 1) showPowerUpNotification('warning'); if (extraLives <= 0) { finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count)); if (finalScore > highScore) { highScore = finalScore; } document.getElementById('go-score-val').innerText = numFmt.format(finalScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; } continue; }
-        if(player.isJumping && player.jumpY > 70){ if(!o.scored){ score += 50; spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); o.scored = true; } continue; }
+        
+        // ✅ NUEVA LÓGICA DE SALTO: Depende solo de la altura del obstáculo
+        if(player.isJumping && player.jumpY > o.h * 0.75){
+          if(!o.scored){ 
+            score += 50; 
+            spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); 
+            o.scored = true; 
+          } 
+          continue; 
+        }
+        
         score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH!", "#f00"); let ptsNow = Math.trunc(score * Math.pow(2, x2Count)); bankedScore += ptsNow; score = 0; x2Count = 0; turboCount = 0; player.maxSpeed = 6; if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);} cleanupAudio(o);obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives)); if(extraLives === 1) showPowerUpNotification('warning'); if (extraLives <= 0) { finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count)); if (finalScore > highScore) { highScore = finalScore; } document.getElementById('go-score-val').innerText = numFmt.format(finalScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); gameActive = false; }
       }
       if(o.x<-o.w-100){cleanupAudio(o);obstacles.splice(i,1);score+=10;}
@@ -621,7 +631,24 @@
     if(currentScore !== lastDisplayedScore){ lastDisplayedScore = currentScore; document.getElementById('score-display').innerText = "PTS: " + numFmt.format(currentScore); document.getElementById('high-score-display').innerText = "BEST: " + numFmt.format(highScore); document.getElementById('speed').innerText=Math.floor(player.speed*15); document.getElementById('dist').innerText=Math.floor(roadOffset/10) + " m"; }
   }
 
-  function loop(){ ctx.clearRect(0,0,W,H); drawWarehouse(); drawRoad(); let list=[]; stars.forEach(s=>{if(!s.collected)list.push({t:'star',o:s,y:s.y})}); boxes.forEach(b=>list.push({t:'box',o:b,y:b.y})); powerups.forEach(p=>{if(!p.collected)list.push({t:'powerup',o:p,y:p.y})}); obstacles.forEach(o=>list.push({t:'obs',o,y:o.y})); if(gameActive)list.push({t:'p',o:player,y:player.y-player.jumpY}); list.sort((a,b)=>a.y-b.y); list.forEach(i=>{if(i.t==='p')drawPlayerSprite();else if(i.t==='star')drawStar(i.o);else if(i.t==='box')drawBox(i.o);else if(i.t==='powerup')drawPowerup(i.o);else if(i.o.isRamp)drawRamp(i.o);else drawObstacleSprite(i.o);}); drawParticles(); floatingTexts.forEach(ft => { ctx.save(); ctx.globalAlpha = ft.life; ctx.fillStyle = ft.color; ctx.shadowColor = "#000"; ctx.shadowBlur = 4; ctx.font = "16px 'Press Start 2P', monospace"; ctx.textAlign = "center"; ctx.fillText(ft.text, ft.x, ft.y); ctx.restore(); }); if(gameActive)update(0.016); requestAnimationFrame(loop); }
+  function loop(){ 
+    ctx.clearRect(0,0,W,H); 
+    drawWarehouse(); 
+    drawRoad(); 
+    
+    let list=[]; 
+    stars.forEach(s=>{if(!s.collected)list.push({t:'star',o:s,y:s.y})}); 
+    boxes.forEach(b=>list.push({t:'box',o:b,y:b.y})); 
+    powerups.forEach(p=>{if(!p.collected)list.push({t:'powerup',o:p,y:p.y})}); 
+    obstacles.forEach(o=>list.push({t:'obs',o,y:o.y})); 
+    if(gameActive)list.push({t:'p',o:player,y:player.y-player.jumpY}); 
+    list.sort((a,b)=>a.y-b.y); 
+    list.forEach(i=>{if(i.t==='p')drawPlayerSprite();else if(i.t==='star')drawStar(i.o);else if(i.t==='box')drawBox(i.o);else if(i.t==='powerup')drawPowerup(i.o);else if(i.o.isRamp)drawRamp(i.o);else drawObstacleSprite(i.o);}); 
+    drawParticles(); 
+    floatingTexts.forEach(ft => { ctx.save(); ctx.globalAlpha = ft.life; ctx.fillStyle = ft.color; ctx.shadowColor = "#000"; ctx.shadowBlur = 4; ctx.font = "16px 'Press Start 2P', monospace"; ctx.textAlign = "center"; ctx.fillText(ft.text, ft.x, ft.y); ctx.restore(); }); 
+    if(gameActive)update(0.016); 
+    requestAnimationFrame(loop); 
+  }
 
   // ✅ ACTUALIZADO: Botón Guardar ahora muestra el ranking completo
   document.getElementById('saveScoreBtn').addEventListener('click', () => {
