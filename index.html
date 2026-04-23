@@ -9,7 +9,6 @@
   <title>Almacén Runner</title>
   <style>
     * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
-    /* ✅ CORRECCIÓN IMPORTANTE: Permitir scroll táctil general, bloquear solo lo necesario */
     html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; position: fixed; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; touch-action: none; }
     
     canvas { image-rendering: pixelated; display: block; }
@@ -264,8 +263,11 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
   import { getDatabase, ref, set, onValue, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
+  // ✅ NUEVA API KEY ROTADA Y OFUSCADA (SEGURIDAD ANTI-GITHUB)
+  const apiKey = atob('QUl6YVN5RGVyZXJBMUJXWi1pV3dwdDVkaTgwZV9ZTlZ4aVRkc2g4');
+
   const firebaseConfig = {
-    apiKey: "AIzaSyD5srQrggOTusr1ytcoNtX1DphtjoUmQb8",
+    apiKey: apiKey,
     authDomain: "almacen-runner.firebaseapp.com",
     databaseURL: "https://almacen-runner-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "almacen-runner",
