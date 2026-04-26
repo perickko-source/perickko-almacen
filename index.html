@@ -368,9 +368,22 @@
     {name:'Xisc1', file:'xisc1.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Ferran', file:'ferran.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Joel', file:'joel.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Vicky', file:'vicky.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
   ];
-  const OBSTACLE_CARS = [ { name: 'camion-lopez', file: 'camion-lopez.png', music: 'camion-lopez.ogg', sound: 'camion-lopez' }, { name: 'volquete', file: 'volquete.png', music: 'volquete.ogg', sound: 'volquete' }, { name: 'heredia', file: 'heredia.png', music: 'heredia.ogg', sound: 'heredia' } ];
+
+  // 🆕 NUEVO OBSTÁCULO: JAULA
+  const OBSTACLE_CARS = [ 
+    { name: 'camion-lopez', file: 'camion-lopez.png', music: 'camion-lopez.ogg', sound: 'camion-lopez' }, 
+    { name: 'volquete', file: 'volquete.png', music: 'volquete.ogg', sound: 'volquete' }, 
+    { name: 'jaula', file: 'jaula.png', music: 'jaula.ogg', sound: 'jaula' },
+    { name: 'heredia', file: 'heredia.png', music: 'heredia.ogg', sound: 'heredia' } 
+  ];
+
   const HEREDIA_W = 364; const HEREDIA_H = 281; 
   const HEREDIA_WHEELS = { front: { x: 22, y: 84, radius: 29, rimRadius: 16 }, rear: { x: -137, y: 90, radius: 26, rimRadius: 14 } };
+  
+  // ✅ NUEVAS DIMENSIONES PARA JAULA
+  const JAULA_W = 180;
+  const JAULA_H = 210;
+
   const TRUCK_W = 650, TRUCK_H = 429, VOLQUETE_SCALE = 0.6;
   const images = {}; [...ALL_CARS, ...OBSTACLE_CARS].forEach(c => { const i = new Image(); i.src = c.file; images[c.file] = i; });
   const boarImg = new Image(); boarImg.src = 'jabali.png';
@@ -473,7 +486,25 @@
     else if(rand < 0.75) { let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; obstacles.push({x:spawnX, y:laneY, lane, isRamp:true, isStunt:true, w:220, h:60}); let carX = spawnX + 500; let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); if(available.length===0)available=ALL_CARS; obstacles.push({x:carX, y:laneY, lane, type: available[Math.floor(Math.random()*available.length)], isRamp:false, isComboTarget:true, w:CAR_W, h:CAR_H}); lastSpawnX = carX + CAR_W/2 + 100; } 
     else { 
       let lane = Math.floor(Math.random()*2), laneY = lane===0?LANE_TOP:LANE_BOTTOM, spawnType = Math.random();
-      if (spawnType < 0.20) { let type = OBSTACLE_CARS[Math.floor(Math.random() * 2)]; let audio = AudioSys.getAudio(type.music); audio.volume = 0.50; let cW = type.name === 'camion-lopez' ? TRUCK_W : Math.floor(CAR_W * VOLQUETE_SCALE); let cH = type.name === 'camion-lopez' ? TRUCK_H : Math.floor(CAR_H * VOLQUETE_SCALE); let yOffset = type.name === 'camion-lopez' ? -90 : 20; obstacles.push({ x: spawnX, y: laneY + yOffset, lane, type, isRamp: false, isSpecial: true, w: cW, h: cH, vehicleAudio: audio, audioTriggered: false, scored: false }); lastSpawnX = spawnX + cW/2 + 100; } 
+      // 🆕 SPAWN DE VEHÍCULOS ESPECIALES
+      if (spawnType < 0.20) { 
+          let type = OBSTACLE_CARS[Math.floor(Math.random() * 3)]; // 0=camion, 1=volquete, 2=jaula
+          let audio = AudioSys.getAudio(type.music); audio.volume = 0.50; 
+          
+          let cW, cH, yOffset;
+          if (type.name === 'camion-lopez') {
+              cW = TRUCK_W; cH = TRUCK_H; yOffset = -90;
+          } else if (type.name === 'jaula') {
+              // ✅ JAULA: Dimensiones 180x210 y elevada 10px sobre el borde
+              cW = JAULA_W; cH = JAULA_H; yOffset = 10; 
+          } else {
+              // Volquete
+              cW = Math.floor(CAR_W * VOLQUETE_SCALE); cH = Math.floor(CAR_H * VOLQUETE_SCALE); yOffset = 20;
+          }
+          
+          obstacles.push({ x: spawnX, y: laneY + yOffset, lane, type, isRamp: false, isSpecial: true, w: cW, h: cH, vehicleAudio: audio, audioTriggered: false, scored: false }); 
+          lastSpawnX = spawnX + cW/2 + 100; 
+      } 
       else if (spawnType < 0.35) { 
         let type = OBSTACLE_CARS.find(c => c.name === 'heredia');
         let audio = AudioSys.getAudio('heredia.ogg'); audio.volume = 0.50; 
@@ -502,20 +533,14 @@
     
     for(let i=stars.length-1;i>=0;i--){let s=stars[i];if(s.collected){stars.splice(i,1);continue;}s.x-=player.speed*4;if(player.lane===s.lane&&Math.abs(player.x-s.x)<70){s.collected=true;collectedStars++;score+=10;AudioSys.playStar();spawnStarCollect(s.x,s.y);if(collectedStars%100===0&&collectedStars>0){extraLives++;AudioSys.playExtraLife();spawnStarCollect(player.x,player.y-player.jumpY);ctx.fillStyle='rgba(0,255,100,0.6)';ctx.fillRect(0,0,W,H);spawnFloatingText(player.x, player.y-50, "VIDA EXTRA!", "#0f0"); showPowerUpNotification('extra_life');}document.getElementById('stars').innerText=collectedStars;document.getElementById('lives').innerText="❤️".repeat(extraLives);spawnFloatingText(s.x, s.y, "+10", "#ffd700");}if(s.x<-50)stars.splice(i,1);}
     
-    //  CAJAS: AHORA RESPETAN LA LÓGICA DE SALTO
+    // CAJAS: AHORA RESPETAN LA LÓGICA DE SALTO
     for(let i=boxes.length-1;i>=0;i--){let b=boxes[i];b.x-=player.speed*4; 
-        // LÓGICA UNIFICADA DE SALTO PARA CAJAS
         if(player.lane===b.lane && Math.abs(player.x-b.x)<80){
             if(player.isJumping && player.jumpY > b.h * 0.75){
-                if(!b.scored){ 
-                    score += 50; 
-                    spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); 
-                    b.scored = true; 
-                } 
-                continue; // Saltado, no chocar
+                if(!b.scored){ score += 50; spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); b.scored = true; } 
+                continue;
             }
         }
-        // Lógica de colisión normal
         if (!b.scored && b.lane !== player.lane && Math.abs(player.y - b.y) < 50) { if (Math.abs(player.x - b.x) < 90) { score += 75; spawnFloatingText(player.x, player.y - 60, "CLOSE CALL! +75", "#0ff"); b.scored = true; } } 
         if(player.lane===b.lane&&Math.abs(player.x-b.x)<80){
             if(shieldTime>0){shieldTime-=2000;boxes.splice(i,1);ctx.fillStyle='rgba(0,204,255,0.3)';ctx.fillRect(0,0,W,H);spawnFloatingText(player.x, player.y-50, "BLOCKED!", "#00ccff");}
@@ -538,15 +563,11 @@
         
         // 🐂 JABALÍ Y RESTO: AHORA RESPETAN LA LÓGICA DE SALTO UNIFICADA
         if(player.isJumping && player.jumpY > o.h * 0.75){
-            if(!o.scored){ 
-                score += 50; 
-                spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); 
-                o.scored = true; 
-            } 
+            if(!o.scored){ score += 50; spawnFloatingText(player.x, player.y-80, "CLEARED! +50", "#0ff"); o.scored = true; } 
             continue; 
         }
 
-        // Si no se salta, ocurre la colisión (Jabalí u otros)
+        // Si no se salta, ocurre la colisión
         if(o.isBoar){ cleanupAudio(o); let ptsNow = Math.trunc(score * Math.pow(2, x2Count)); bankedScore += ptsNow; score = 0; x2Count = 0; spawnFloatingText(player.x, player.y-50, "CRASH!", "#f00"); if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);} obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives)); if(extraLives === 1) showPowerUpNotification('warning'); if (extraLives <= 0) { finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count)); if (finalScore > highScore) { highScore = finalScore; } document.getElementById('go-score-val').innerText = numFmt.format(finalScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); stopLoop(); gameActive = false; } continue; }
         
         score -= 100; spawnFloatingText(player.x, player.y-50, "CRASH!", "#f00"); let ptsNow = Math.trunc(score * Math.pow(2, x2Count)); bankedScore += ptsNow; score = 0; x2Count = 0; turboCount = 0; player.maxSpeed = 6; if(collectedStars>0){collectedStars=0;AudioSys.playCollision();spawnStarLoss(player.x,player.y-player.jumpY);document.getElementById('stars').innerText=collectedStars;}else{player.speed*=0.3;AudioSys.playCollision();spawnSparks(player.x+player.w/2-20,player.y-player.jumpY);} cleanupAudio(o);obstacles.splice(i,1);ctx.fillStyle='rgba(255,0,0,0.5)';ctx.fillRect(0,0,W,H); extraLives--; document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives)); if(extraLives === 1) showPowerUpNotification('warning'); if (extraLives <= 0) { finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count)); if (finalScore > highScore) { highScore = finalScore; } document.getElementById('go-score-val').innerText = numFmt.format(finalScore); document.getElementById('go-best-val').innerText = numFmt.format(highScore); document.getElementById('game-over-screen').classList.add('active'); stopLoop(); gameActive = false; }
