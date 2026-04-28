@@ -369,18 +369,28 @@
     {name:'Joel', file:'joel.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Vicky', file:'vicky.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
   ];
 
-  // 🆕 NUEVO OBSTÁCULO: JAULA
+  // ✅ NUEVOS DATOS DE BUSTA (CALIBRADOS A MANO)
+  const BUSTA_WHEELS = {
+    frontX: 20,
+    y: 82,
+    radius: 27,
+    rimRadius: 14
+  };
+
+  // 🆕 INTEGRADO: BUSTA Y RESTO DE OBSTÁCULOS
   const OBSTACLE_CARS = [ 
     { name: 'camion-lopez', file: 'camion-lopez.png', music: 'camion-lopez.ogg', sound: 'camion-lopez' }, 
     { name: 'volquete', file: 'volquete.png', music: 'volquete.ogg', sound: 'volquete' }, 
     { name: 'jaula', file: 'jaula.png', music: 'jaula.ogg', sound: 'jaula' },
+    // ✅ BUSTA: Agregado con sus ruedas personalizadas definitivas
+    { name: 'busta', file: 'busta.png', music: 'busta.ogg', sound: 'busta', wheels: BUSTA_WHEELS, singleFrontWheel: true },
     { name: 'heredia', file: 'heredia.png', music: 'heredia.ogg', sound: 'heredia' } 
   ];
 
   const HEREDIA_W = 364; const HEREDIA_H = 281; 
   const HEREDIA_WHEELS = { front: { x: 22, y: 84, radius: 29, rimRadius: 16 }, rear: { x: -137, y: 90, radius: 26, rimRadius: 14 } };
   
-  // ✅ NUEVAS DIMENSIONES PARA JAULA
+  // ✅ JAULA: Dimensiones originales restauradas (180x210)
   const JAULA_W = 180;
   const JAULA_H = 210;
 
@@ -486,17 +496,20 @@
     else if(rand < 0.75) { let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; obstacles.push({x:spawnX, y:laneY, lane, isRamp:true, isStunt:true, w:220, h:60}); let carX = spawnX + 500; let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); if(available.length===0)available=ALL_CARS; obstacles.push({x:carX, y:laneY, lane, type: available[Math.floor(Math.random()*available.length)], isRamp:false, isComboTarget:true, w:CAR_W, h:CAR_H}); lastSpawnX = carX + CAR_W/2 + 100; } 
     else { 
       let lane = Math.floor(Math.random()*2), laneY = lane===0?LANE_TOP:LANE_BOTTOM, spawnType = Math.random();
-      // 🆕 SPAWN DE VEHÍCULOS ESPECIALES
-      if (spawnType < 0.20) { 
-          let type = OBSTACLE_CARS[Math.floor(Math.random() * 3)]; // 0=camion, 1=volquete, 2=jaula
+      // 🆕 SPAWN DE VEHÍCULOS ESPECIALES (Camion, Volquete, Jaula, Busta)
+      if (spawnType < 0.25) { 
+          let type = OBSTACLE_CARS[Math.floor(Math.random() * 4)]; // 0=camion, 1=volquete, 2=jaula, 3=busta
           let audio = AudioSys.getAudio(type.music); audio.volume = 0.50; 
           
           let cW, cH, yOffset;
           if (type.name === 'camion-lopez') {
               cW = TRUCK_W; cH = TRUCK_H; yOffset = -90;
           } else if (type.name === 'jaula') {
-              // ✅ JAULA: Dimensiones 180x210 y elevada 10px sobre el borde
+              // ✅ JAULA: Dimensiones originales restauradas (180x210) y posición (10px)
               cW = JAULA_W; cH = JAULA_H; yOffset = 10; 
+          } else if (type.name === 'busta') {
+              // ✅ BUSTA: Configuración base (ajustable después)
+              cW = CAR_W; cH = CAR_H; yOffset = 0; 
           } else {
               // Volquete
               cW = Math.floor(CAR_W * VOLQUETE_SCALE); cH = Math.floor(CAR_H * VOLQUETE_SCALE); yOffset = 20;
