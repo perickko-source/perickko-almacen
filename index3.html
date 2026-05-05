@@ -343,6 +343,8 @@
       const cfg = configs[type]; if(!cfg) return; notifEl.innerHTML = cfg.text; notifEl.style.color = cfg.color; notifEl.style.textShadow = `0 0 20px ${cfg.glow}, 4px 4px 0px #000`;
       notifEl.classList.add('active'); setTimeout(() => { notifEl.classList.remove('active'); }, 1200);
   }
+  
+  // --- SISTEMA DE PARTÍCULAS ---
   function spawnSmoke(x,y){if(particles.length>=PARTICLE_MAX)return;particles.push({x,y,vx:-3-Math.random()*2,vy:-1+Math.random()*2,life:0.8+Math.random()*0.4,maxLife:1.2,size:8+Math.random()*12,type:'smoke'});}
   function spawnSparks(x,y){if(particles.length>=PARTICLE_MAX)return;for(let i=0;i<15;i++){let a=Math.random()*Math.PI*2,s=4+Math.random()*8;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0.3+Math.random()*0.3,maxLife:0.6,size:2+Math.random()*3,type:'spark',hue:30+Math.random()*30});}}
   function spawnStarCollect(x,y){if(particles.length>=PARTICLE_MAX)return;for(let i=0;i<12;i++){let a=Math.random()*Math.PI*2;particles.push({x,y,vx:Math.cos(a)*(2+Math.random()*4),vy:Math.sin(a)*(2+Math.random()*4),life:0.4+Math.random()*0.3,maxLife:0.7,size:4+Math.random()*5,type:'star-collect',hue:45+Math.random()*30});}}
@@ -350,11 +352,77 @@
   function spawnShieldPickup(x,y){if(particles.length>=PARTICLE_MAX)return;for(let i=0;i<15;i++){let a=Math.random()*Math.PI*2;particles.push({x,y,vx:Math.cos(a)*(1+Math.random()*3),vy:Math.sin(a)*(1+Math.random()*3),life:0.6+Math.random()*0.4,maxLife:1.0,size:5+Math.random()*6,type:'shield-particle',hue:180+Math.random()*40});}}
   function spawnTurboPickup(x,y){if(particles.length>=PARTICLE_MAX)return;for(let i=0;i<15;i++){let a=Math.random()*Math.PI*2;particles.push({x,y,vx:Math.cos(a)*(2+Math.random()*4),vy:Math.sin(a)*(2+Math.random()*4),life:0.5+Math.random()*0.3,maxLife:0.8,size:4+Math.random()*5,type:'turbo-particle',hue:Math.random()*30});}}
   function spawnX2Pickup(x,y){if(particles.length>=PARTICLE_MAX)return;for(let i=0;i<15;i++){let a=Math.random()*Math.PI*2;particles.push({x,y,vx:Math.cos(a)*(1+Math.random()*3),vy:Math.sin(a)*(1+Math.random()*3),life:0.6+Math.random()*0.4,maxLife:1.0,size:5+Math.random()*6,type:'x2-particle',hue:45+Math.random()*30});}}
+
+  // 🔴 FUNCIÓN: IMPACTO SANGRE REALISTA (OPCIÓN 1)
+  // NO TOCA OTROS SISTEMAS. SOLO GENERA PARTÍCULAS 'blood'.
+  function spawnPedestrianImpact(x, y) {
+      for (let i = 0; i < 25; i++) {
+          particles.push({
+              x: x + (Math.random() - 0.5) * 30, // Salen del centro del cuerpo
+              y: y - 50 + (Math.random() - 0.5) * 60, // Salen del torso
+              vx: (Math.random() - 0.5) * 12, // Dispersión horizontal
+              vy: -Math.random() * 10 - 2, // Salen hacia arriba
+              size: Math.random() * 4 + 1, // Tamaños variados
+              color: `rgb(${100 + Math.random()*60}, 0, 0)`, // Rojos oscuros
+              life: 1, 
+              decay: 0.03, // Desaparecen relativamente rápido
+              type: 'blood',
+              gravity: 0.6 // Gravedad para que caigan
+          });
+      }
+  }
   
   function spawnFloatingText(x, y, text, color) { if(floatingTexts.length >= TEXT_MAX) floatingTexts.splice(0, 1); floatingTexts.push({ x, y, text, color, life: 1.0, vy: -2, fontSize: 24 }); }
 
-  function updateParticles(){ for(let i=particles.length-1;i>=0;i--){ let p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.life-=0.035; if(p.type==='fire'){p.vy-=0.08;p.vx+=(Math.random()-0.5)*0.5;p.size*=0.97;} else if(p.type==='spark'){p.vy-=0.04;p.vx*=0.96;p.size*=0.95;} else if(p.type==='smoke'){p.size+=0.4;p.vy-=0.03;p.vx*=0.99;} if(p.life<=0||p.x<-200||p.x>W+200||p.y<-200||p.y>H+200) particles.splice(i,1); } }
-  function drawParticles(){ for(let p of particles){ let alpha=Math.max(0,p.life/p.maxLife); if(p.type==='fire'||p.type==='spark'){ ctx.globalCompositeOperation='lighter'; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*2.5); if(p.type==='fire'){g.addColorStop(0,`rgba(255,255,220,${alpha})`);g.addColorStop(0.25,`rgba(255,200,50,${alpha*0.9})`);g.addColorStop(0.6,`rgba(255,100,20,${alpha*0.6})`);g.addColorStop(1,`rgba(200,30,0,0)`);} else{g.addColorStop(0,`rgba(255,255,255,${alpha})`);g.addColorStop(0.4,`rgba(255,220,80,${alpha*0.7})`);g.addColorStop(1,`rgba(255,150,0,0)`);} ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(1+(1-alpha)*0.8),0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over'; }else if(p.type==='smoke'){ctx.fillStyle=`rgba(180,180,180,${alpha*0.5})`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();} } }
+  // --- UPDATE Y DRAW DE PARTÍCULAS ---
+  function updateParticles(){ 
+      for(let i=particles.length-1;i>=0;i--){ 
+          let p=particles[i]; 
+          
+          // 🔴 APLICAR GRAVEDAD A LA SANGRE
+          if (p.type === 'blood' && p.gravity) {
+              p.vy += p.gravity;
+          }
+          
+          // Movimiento base
+          p.x += p.vx; 
+          p.y += p.vy;
+          p.life -= 0.035; 
+          
+          // Lógica específica de otros tipos (NO TOCADA)
+          if(p.type==='fire'){p.vy-=0.08;p.vx+=(Math.random()-0.5)*0.5;p.size*=0.97;} 
+          else if(p.type==='spark'){p.vy-=0.04;p.vx*=0.96;p.size*=0.95;} 
+          else if(p.type==='smoke'){p.size+=0.4;p.vy-=0.03;p.vx*=0.99;} 
+          
+          if(p.life<=0||p.x<-200||p.x>W+200||p.y<-200||p.y>H+200) particles.splice(i,1); 
+      } 
+  }
+
+  function drawParticles(){ 
+      for(let p of particles){ 
+          let alpha=Math.max(0,p.life/p.maxLife);
+          
+          // 🔴 DIBUJAR SANGRE (Círculos rojos normales, sin efectos de luz)
+          if (p.type === 'blood') {
+              ctx.fillStyle = p.color;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+              ctx.fill();
+              continue; // Saltamos el resto para no dibujar humo/fuego encima
+          }
+
+          // Lógica estándar de fuego/humo (NO TOCADA)
+          if(p.type==='fire'||p.type==='spark'){ 
+              ctx.globalCompositeOperation='lighter'; 
+              const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*2.5); 
+              if(p.type==='fire'){g.addColorStop(0,`rgba(255,255,220,${alpha})`);g.addColorStop(0.25,`rgba(255,200,50,${alpha*0.9})`);g.addColorStop(0.6,`rgba(255,100,20,${alpha*0.6})`);g.addColorStop(1,`rgba(200,30,0,0)`);} 
+              else{g.addColorStop(0,`rgba(255,255,255,${alpha})`);g.addColorStop(0.4,`rgba(255,220,80,${alpha*0.7})`);g.addColorStop(1,`rgba(255,150,0,0)`);} 
+              ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(1+(1-alpha)*0.8),0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over'; 
+          }else if(p.type==='smoke'){
+              ctx.fillStyle=`rgba(180,180,180,${alpha*0.5})`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+          } 
+      } 
+  }
 
   const WHEEL_CONFIG = { frontX: 40, y: 82, radius: 27, rimRadius: 14 };
   const ALL_CARS = [
@@ -650,6 +718,8 @@
                 player.stumble.active = true;
                 player.stumble.progress = 0;
                 score += 20;
+                // 🔴 DISPARAMOS SANGRE REALISTA
+                spawnPedestrianImpact(p.x, p.y);
                 spawnFloatingText(p.x, p.y - p.h/2 - 20, "+20", "#00ff00");
                 const audio = new Audio('chaf.ogg');
                 audio.volume = 0.8;
