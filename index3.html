@@ -368,7 +368,8 @@
     {name:'Jaume', file:'jaume.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Jordi', file:'jordi.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Tinoco', file:'tinoco.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Andres', file:'andres.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Xisc1', file:'xisc1.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Ferran', file:'ferran.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Joel', file:'joel.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Vicky', file:'vicky.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
+    {name:'Joel', file:'joel.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Vicky', file:'vicky.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Xell', file:'xell.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
   ];
 
   const BUSTA_WHEELS = { frontX: 20, y: 82, radius: 27, rimRadius: 13 };
@@ -507,17 +508,15 @@
 
   function drawRoad(){ ctx.fillStyle='#333'; ctx.fillRect(0,ROAD_Y-LANE_HEIGHT,W,LANE_HEIGHT*2); ctx.strokeStyle='#fff'; ctx.lineWidth=8; ctx.setLineDash([58,58]); ctx.lineDashOffset=-roadOffset; ctx.beginPath(); ctx.moveTo(0,ROAD_Y); ctx.lineTo(W,ROAD_Y); ctx.stroke(); ctx.setLineDash([]); ctx.strokeStyle='#fff'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(0,ROAD_Y-LANE_HEIGHT); ctx.lineTo(W,ROAD_Y-LANE_HEIGHT); ctx.moveTo(0,ROAD_Y+LANE_HEIGHT); ctx.lineTo(W,ROAD_Y+LANE_HEIGHT); ctx.stroke(); drawDiagonalBorders(); }
   
-  // 🐂 DIBUJO DEL TORO CON MICRO-TROPEZÓN
   function drawPlayerSprite(){ 
       ctx.save(); 
       let drawY = player.y - player.jumpY; 
       let drawAngle = player.jumpAngle;
       
-      // Aplicar micro-tropezón si está activo
       if(player.stumble.active){
           const t = player.stumble.progress;
-          const bump = -Math.sin(t * Math.PI) * 10; // Micro-salto de 10px
-          const tilt = Math.sin(t * Math.PI) * 0.06; // Ligera inclinación (~3.4°)
+          const bump = -Math.sin(t * Math.PI) * 10;
+          const tilt = Math.sin(t * Math.PI) * 0.06;
           drawY += bump;
           drawAngle += tilt;
       }
@@ -598,7 +597,6 @@
     if(!gameActive)return;
     if(shieldTime>0){shieldTime-=16;if(shieldTime<=0){shieldTime=0;updatePowerupUI();}}
     
-    // Actualizar micro-tropezón
     if(player.stumble.active){
         player.stumble.progress += dt / player.stumble.duration;
         if(player.stumble.progress >= 1){
@@ -649,7 +647,7 @@
             if (player.lane === p.lane && Math.abs(player.x - p.x) < 180) {
                 p.isHit = true;
                 p.angle = 0; 
-                player.stumble.active = true; // ACTIVAR MICRO-TROPEZÓN
+                player.stumble.active = true;
                 player.stumble.progress = 0;
                 score += 20;
                 spawnFloatingText(p.x, p.y - p.h/2 - 20, "+20", "#00ff00");
