@@ -288,7 +288,6 @@
     }, () => { document.getElementById('leaderboard-list').innerHTML = '<div style="color:#f88">Error</div>'; });
   }
   
-  // 🔧 CAMBIO AQUÍ: CARGA EL RÉCORD REAL CON NOMBRE Y LÓGICA ROBUSTA
   function loadGlobalHighScore() {
     const displayEl = document.getElementById('menu-high-score');
     displayEl.innerText = "Cargando...";
@@ -298,7 +297,6 @@
         return;
     }
     
-    // Obtenemos todos los datos y ordenamos localmente para evitar errores de índice de Firebase
     get(ref(db, 'scores')).then((snap) => {
       const data = snap.val();
       if (data) {
@@ -355,7 +353,7 @@
   let particles=[]; const PARTICLE_MAX=400; let floatingTexts=[]; const TEXT_MAX=15; let finalScore = 0;
   let playerBullets = []; let bossBullets = [];
   const BULLET_SPEED = 15; const BOSS_BULLET_SPEED = 9; const FIRE_RATE = 200; let lastFireTime = 0;
-  let lastAutoShot = 0; const AUTO_SHOT_INTERVAL = 1200;
+  let lastAutoShot = 0; const AUTO_SHOT_INTERVAL = 200; // 🔧 DISPARO AUTOMÁTICO CADA 200ms
   
   let screenFlash = { active: false, color: 'rgba(255,0,0,0.3)', alpha: 0, duration: 10 };
   let bossHitFlash = 0;
@@ -552,8 +550,12 @@
   document.getElementById('playBtn').addEventListener('touchstart',(e)=>{e.preventDefault();startGame();});
   document.getElementById('restartBtn').addEventListener('click',startGame);
 
+  // 🔧 NUEVO: Temporizador de 2 minutos por si la música falla
+  let bossFallbackTimer = null;
+
   function goToMenu() { 
     stopLoop(); AudioSys.stopMusic(); gameActive=false; selectedCar=null; extraLives=3; collectedStars=0; score=0; roadOffset=0; turboCount=0; x2Count=0; shieldTime=0; lastCheckpoint=0; stars=[]; boxes=[]; powerups=[]; obstacles=[]; particles=[]; floatingTexts=[]; playerBullets=[]; bossBullets=[]; boss=null; bossFightActive=false; bossDefeated=false; songCycleEnded=false; bossDeathPause=0;
+    if (bossFallbackTimer) clearTimeout(bossFallbackTimer); // 🔧 Limpiar temporizador
     document.getElementById('ui').classList.add('hidden'); document.getElementById('mobile-controls').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('active'); 
     document.getElementById('boss-hud').classList.remove('active');
     document.getElementById('full-ranking-screen').classList.remove('active'); document.getElementById('menu').classList.remove('hidden'); document.getElementById('powerup-display').classList.remove('active'); loadGlobalHighScore();
@@ -572,7 +574,15 @@
     screenShake = { active: false, intensity: 0, duration: 0 };
     bossHitFlash = 0; playerInvincible = 0;
     
-    if(AudioSys.mainMusic) { AudioSys.mainMusic.onended = () => { if(gameActive && !bossFightActive && !bossDefeated) spawnBoss(); }; }
+    // 🔧 NUEVO: Iniciar temporizador de 2 minutos
+    if (bossFallbackTimer) clearTimeout(bossFallbackTimer);
+    bossFallbackTimer = setTimeout(() => {
+        if (gameActive && !bossFightActive && !bossDefeated && !songCycleEnded) {
+            console.log("⚠️ La música no cargó o falló. Activando jefe por temporizador (2 min).");
+            spawnBoss();
+            songCycleEnded = true;
+        }
+    }, 120000); // 120000 ms = 2 minutos
 
     localStorage.removeItem('c1_session_checkpoint'); document.getElementById('player-name').value = '';
     document.getElementById('radio-screen').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('active');
@@ -646,6 +656,7 @@
   ];
 
   function spawnBoss() {
+    if (bossFallbackTimer) clearTimeout(bossFallbackTimer); // 🔧 Limpiar temporizador si el jefe sale antes
     bossFightActive = true; 
     obstacles = []; boxes = []; stars = []; powerups = []; playerBullets = []; bossBullets = [];
     
@@ -749,14 +760,11 @@
 
   function playerAutoShoot() {
     const now = Date.now();
+    // 🔧 Disparo automático cada 200ms durante la pelea
     if (now - lastAutoShot >= AUTO_SHOT_INTERVAL && bossFightActive && !bossDefeated) {
-      for (let i = 0; i < 2; i++) {
-        setTimeout(() => {
-          const barrel = getGunBarrelPosition();
-          playerBullets.push({ x: barrel.x, y: barrel.y, lane: player.lane, w: 12, h: 12, vx: BULLET_SPEED, damage: 5, type: 'player' });
-          AudioSys.playLaser();
-        }, i * 80);
-      }
+      const barrel = getGunBarrelPosition();
+      playerBullets.push({ x: barrel.x, y: barrel.y, lane: player.lane, w: 12, h: 12, vx: BULLET_SPEED, damage: 5, type: 'player' });
+      AudioSys.playLaser();
       lastAutoShot = now;
     }
   }
@@ -863,6 +871,7 @@
     lastFrameTime = now;
     
     if (AudioSys.mainMusic && !bossFightActive && !bossDefeated && !songCycleEnded) {
+        // 🔧 CHEQUEO SEGURO: Solo usa la música si tiene duración válida
         if (AudioSys.mainMusic.duration && AudioSys.mainMusic.currentTime > AudioSys.mainMusic.duration - 0.2) { spawnBoss(); songCycleEnded = true; }
     }
 
@@ -896,7 +905,7 @@
       if(spawnGapTracker >= nextSpawnGap) { spawnObstacle(); spawnGapTracker = 0; nextSpawnGap = minGap + Math.random() * (maxGap - minGap); } 
     }
     
-    if (bossFightActive && !bossDefeated) playerAutoShoot();
+    if (bossFightActive && !bossDefeated) playerAutoShoot(); // 🔧 Disparo automático activo
     
     for(let i=stars.length-1;i>=0;i--){let s=stars[i];if(s.collected){stars.splice(i,1);continue;}s.x-=player.speed*4;if(player.lane===s.lane&&Math.abs(player.x-s.x)<70){s.collected=true;collectedStars++;score+=10;AudioSys.playStar();spawnStarCollect(s.x,s.y);if(collectedStars%100===0&&collectedStars>0){extraLives++;AudioSys.playExtraLife();spawnStarCollect(player.x,player.y-player.jumpY);triggerScreenFlash('rgba(0,255,100,0.4)',10);spawnFloatingText(player.x, player.y-50, "VIDA EXTRA!", "#0f0"); showPowerUpNotification('extra_life');}document.getElementById('stars').innerText=collectedStars;document.getElementById('lives').innerText="❤️".repeat(extraLives);spawnFloatingText(s.x, s.y, "+10", "#ffd700");}if(s.x<-50)stars.splice(i,1);}
     
@@ -967,13 +976,8 @@
   function startLoop() { if(!animationId && gameActive) { lastFrameTime = performance.now(); loop(); } }
   function stopLoop() { if(animationId) { cancelAnimationFrame(animationId); animationId = null; } }
 
-  let isShooting = false;
-  function handleShootStart(e) { if (!gameActive || bossFightActive) return; isShooting = true; playerShoot(); }
-  function handleShootEnd(e) { isShooting = false; }
-  setInterval(() => { if (isShooting && gameActive && bossFightActive) playerShoot(); }, FIRE_RATE);
-  canvas.addEventListener('mousedown', handleShootStart); canvas.addEventListener('mouseup', handleShootEnd);
-  canvas.addEventListener('touchstart', (e) => { if (e.target === canvas) handleShootStart(e); }); canvas.addEventListener('touchend', handleShootEnd);
-  window.addEventListener('keydown', e => { if (e.code === 'Space' && gameActive && bossFightActive) playerShoot(); });
+  // 🔧 LIMPIEZA: Eliminados disparos manuales (ratón/teclado) para evitar conflictos.
+  // El disparo ahora es 100% automático durante la pelea.
 
   document.getElementById('saveScoreBtn').addEventListener('click', () => {
     const nameInput = document.getElementById('player-name'); const name = nameInput.value.trim();
