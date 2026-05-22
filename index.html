@@ -353,7 +353,7 @@
   let particles=[]; const PARTICLE_MAX=400; let floatingTexts=[]; const TEXT_MAX=15; let finalScore = 0;
   let playerBullets = []; let bossBullets = [];
   const BULLET_SPEED = 15; const BOSS_BULLET_SPEED = 9; const FIRE_RATE = 200; let lastFireTime = 0;
-  let lastAutoShot = 0; const AUTO_SHOT_INTERVAL = 200; // 🔧 DISPARO AUTOMÁTICO CADA 200ms
+  let lastAutoShot = 0; const AUTO_SHOT_INTERVAL = 200;
   
   let screenFlash = { active: false, color: 'rgba(255,0,0,0.3)', alpha: 0, duration: 10 };
   let bossHitFlash = 0;
@@ -445,7 +445,10 @@
     {name:'Tinoco', file:'tinoco.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Andres', file:'andres.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Xisc1', file:'xisc1.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Ferran', file:'ferran.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
     {name:'Joel', file:'joel.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}, {name:'Vicky', file:'vicky.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
-    {name:'Txell', file:'xell.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
+    {name:'Txell', file:'xell.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    // 🔧 NUEVOS TOROS: Andrea y Justy
+    {name:'Andrea', file:'andrea.png', wheels: WHEEL_CONFIG, singleFrontWheel: true},
+    {name:'Justy', file:'justy.png', wheels: WHEEL_CONFIG, singleFrontWheel: true}
   ];
 
   const BUSTA_WHEELS = { frontX: 20, y: 82, radius: 27, rimRadius: 14 };
@@ -454,11 +457,17 @@
     { name: 'volquete', file: 'volquete.png', music: 'volquete.ogg', sound: 'volquete' }, 
     { name: 'jaula', file: 'jaula.png', music: 'jaula.ogg', sound: 'jaula' },
     { name: 'busta', file: 'busta.png', music: 'busta.ogg', sound: 'busta', wheels: BUSTA_WHEELS, singleFrontWheel: true },
-    { name: 'heredia', file: 'heredia.png', music: 'heredia.ogg', sound: 'heredia' } 
+    { name: 'heredia', file: 'heredia.png', music: 'heredia.ogg', sound: 'heredia' },
+    { name: 'julian', file: 'julian.png', music: 'julian.ogg', sound: 'julian' }
   ];
 
   const HEREDIA_W = 364; const HEREDIA_H = 281; 
   const HEREDIA_WHEELS = { front: { x: 22, y: 84, radius: 29, rimRadius: 16 }, rear: { x: -137, y: 90, radius: 26, rimRadius: 14 } };
+  const JULIAN_WHEELS = {
+    front: { x: 175, y: 84, radius: 35, rimRadius: 17 },
+    rear: { x: -158, y: 87, radius: 36, rimRadius: 18 }
+  };
+  
   const JAULA_W = 180; const JAULA_H = 210;
   const TRUCK_W = 650, TRUCK_H = 429, VOLQUETE_SCALE = 0.6;
   const images = {}; [...ALL_CARS, ...OBSTACLE_CARS].forEach(c => { const i = new Image(); i.src = c.file; images[c.file] = i; });
@@ -550,12 +559,11 @@
   document.getElementById('playBtn').addEventListener('touchstart',(e)=>{e.preventDefault();startGame();});
   document.getElementById('restartBtn').addEventListener('click',startGame);
 
-  // 🔧 NUEVO: Temporizador de 2 minutos por si la música falla
   let bossFallbackTimer = null;
 
   function goToMenu() { 
     stopLoop(); AudioSys.stopMusic(); gameActive=false; selectedCar=null; extraLives=3; collectedStars=0; score=0; roadOffset=0; turboCount=0; x2Count=0; shieldTime=0; lastCheckpoint=0; stars=[]; boxes=[]; powerups=[]; obstacles=[]; particles=[]; floatingTexts=[]; playerBullets=[]; bossBullets=[]; boss=null; bossFightActive=false; bossDefeated=false; songCycleEnded=false; bossDeathPause=0;
-    if (bossFallbackTimer) clearTimeout(bossFallbackTimer); // 🔧 Limpiar temporizador
+    if (bossFallbackTimer) clearTimeout(bossFallbackTimer);
     document.getElementById('ui').classList.add('hidden'); document.getElementById('mobile-controls').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('active'); 
     document.getElementById('boss-hud').classList.remove('active');
     document.getElementById('full-ranking-screen').classList.remove('active'); document.getElementById('menu').classList.remove('hidden'); document.getElementById('powerup-display').classList.remove('active'); loadGlobalHighScore();
@@ -574,7 +582,6 @@
     screenShake = { active: false, intensity: 0, duration: 0 };
     bossHitFlash = 0; playerInvincible = 0;
     
-    // 🔧 NUEVO: Iniciar temporizador de 2 minutos
     if (bossFallbackTimer) clearTimeout(bossFallbackTimer);
     bossFallbackTimer = setTimeout(() => {
         if (gameActive && !bossFightActive && !bossDefeated && !songCycleEnded) {
@@ -582,7 +589,7 @@
             spawnBoss();
             songCycleEnded = true;
         }
-    }, 120000); // 120000 ms = 2 minutos
+    }, 120000);
 
     localStorage.removeItem('c1_session_checkpoint'); document.getElementById('player-name').value = '';
     document.getElementById('radio-screen').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('active');
@@ -636,11 +643,41 @@
     else if(rand < 0.45) { let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; boxes.push({x:spawnX, y:laneY, lane, w:60, h:70, scored:false}); lastSpawnX = spawnX + 100; } 
     else if(rand < 0.60) { let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; const types = x2Count >= 3 ? ['shield', 'turbo', 'turbo'] : ['shield', 'turbo', 'turbo', 'x2']; powerups.push({x:spawnX, y:laneY, lane, type: types[Math.floor(Math.random()*types.length)], radius:30, collected:false, offset:Math.random()*Math.PI*2}); lastSpawnX = spawnX + 100; } 
     else if(rand < 0.75) { let lane = Math.floor(Math.random()*2); let laneY = lane===0?LANE_TOP:LANE_BOTTOM; obstacles.push({x:spawnX, y:laneY, lane, isRamp:true, isStunt:true, w:220, h:60}); let carX = spawnX + 500; let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); if(available.length===0)available=ALL_CARS; obstacles.push({x:carX, y:laneY, lane, type: available[Math.floor(Math.random()*available.length)], isRamp:false, isComboTarget:true, w:CAR_W, h:CAR_H}); lastSpawnX = carX + CAR_W/2 + 100; } 
-    else { let lane = Math.floor(Math.random()*2), laneY = lane===0?LANE_TOP:LANE_BOTTOM, spawnType = Math.random(); if (spawnType < 0.25) { let type = OBSTACLE_CARS[Math.floor(Math.random() * 4)]; let audio = AudioSys.getAudio(type.music); audio.volume = 0.50; let cW, cH, yOffset; if (type.name === 'camion-lopez') { cW = TRUCK_W; cH = TRUCK_H; yOffset = -90; } else if (type.name === 'jaula') { cW = JAULA_W; cH = JAULA_H; yOffset = 10; } else if (type.name === 'busta') { cW = CAR_W; cH = CAR_H; yOffset = 0; } else { cW = Math.floor(CAR_W * VOLQUETE_SCALE); cH = Math.floor(CAR_H * VOLQUETE_SCALE); yOffset = 20; } obstacles.push({ x: spawnX, y: laneY + yOffset, lane, type, isRamp: false, isSpecial: true, w: cW, h: cH, vehicleAudio: audio, audioTriggered: false, scored: false }); lastSpawnX = spawnX + cW/2 + 100; } else if (spawnType < 0.35) { let type = OBSTACLE_CARS.find(c => c.name === 'heredia'); let audio = AudioSys.getAudio('heredia.ogg'); audio.volume = 0.50; type.wheels = HEREDIA_WHEELS; type.singleFrontWheel = false; obstacles.push({ x: spawnX, y: laneY - 10, lane, type, isRamp: false, isSpecial: true, w: HEREDIA_W, h: HEREDIA_H, vehicleAudio: audio, audioTriggered: false, scored: false }); lastSpawnX = spawnX + HEREDIA_W/2 + 100; } else { let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); if(available.length===0) available = ALL_CARS; obstacles.push({x:spawnX, y:laneY, lane, type: available[Math.floor(Math.random()*available.length)], isRamp:false, isComboTarget:false, w:CAR_W, h:CAR_H, scored:false}); lastSpawnX = spawnX + CAR_W/2 + 100; } } 
+    else { 
+      let lane = Math.floor(Math.random()*2), laneY = lane===0?LANE_TOP:LANE_BOTTOM, spawnType = Math.random(); 
+      if (spawnType < 0.25) {
+          // 🚐 JULIAN
+          let type = OBSTACLE_CARS.find(c => c.name === 'julian');
+          let audio = AudioSys.getAudio('julian.ogg'); audio.volume = 0.50;
+          type.wheels = JULIAN_WHEELS; 
+          type.singleFrontWheel = false; 
+          let cW = 545, cH = 300, yOffset = -15; 
+          obstacles.push({ x: spawnX, y: laneY + yOffset, lane, type, isRamp: false, isSpecial: true, w: cW, h: cH, vehicleAudio: audio, audioTriggered: false, scored: false });
+          lastSpawnX = spawnX + cW/2 + 100;
+      } else if (spawnType < 0.45) {
+          let type = OBSTACLE_CARS[Math.floor(Math.random() * 4)];
+          let audio = AudioSys.getAudio(type.music); audio.volume = 0.50;
+          let cW, cH, yOffset;
+          if (type.name === 'camion-lopez') { cW = TRUCK_W; cH = TRUCK_H; yOffset = -90; }
+          else if (type.name === 'jaula') { cW = JAULA_W; cH = JAULA_H; yOffset = 10; }
+          else if (type.name === 'busta') { cW = CAR_W; cH = CAR_H; yOffset = 0; }
+          else { cW = Math.floor(CAR_W * VOLQUETE_SCALE); cH = Math.floor(CAR_H * VOLQUETE_SCALE); yOffset = 20; }
+          obstacles.push({ x: spawnX, y: laneY + yOffset, lane, type, isRamp: false, isSpecial: true, w: cW, h: cH, vehicleAudio: audio, audioTriggered: false, scored: false });
+          lastSpawnX = spawnX + cW/2 + 100;
+      } else if (spawnType < 0.60) {
+          let type = OBSTACLE_CARS.find(c => c.name === 'heredia');
+          let audio = AudioSys.getAudio('heredia.ogg'); audio.volume = 0.50;
+          type.wheels = HEREDIA_WHEELS; type.singleFrontWheel = false;
+          obstacles.push({ x: spawnX, y: laneY - 10, lane, type, isRamp: false, isSpecial: true, w: HEREDIA_W, h: HEREDIA_H, vehicleAudio: audio, audioTriggered: false, scored: false }); lastSpawnX = spawnX + HEREDIA_W/2 + 100;
+      } else {
+          let available = ALL_CARS.filter(c=>c.file!==selectedCar.file); if(available.length===0) available = ALL_CARS;
+          obstacles.push({x:spawnX, y:laneY, lane, type: available[Math.floor(Math.random()*available.length)], isRamp:false, isComboTarget:false, w:CAR_W, h:CAR_H, scored:false});
+          lastSpawnX = spawnX + CAR_W/2 + 100;
+      }
+    } 
   }
   function cleanupAudio(obj) { if (obj && obj.vehicleAudio) { try { obj.vehicleAudio.pause(); obj.vehicleAudio.currentTime = 0; } catch(e) {} } }
 
-  // 🔧 IA DEL JEFE: SECUENCIA ROBUSTA Y CORREGIDA
   const BOSS_SEQUENCE = [
     { type: 'move', dir: 'left', speed: 4.5 },
     { type: 'switch' },
@@ -656,7 +693,7 @@
   ];
 
   function spawnBoss() {
-    if (bossFallbackTimer) clearTimeout(bossFallbackTimer); // 🔧 Limpiar temporizador si el jefe sale antes
+    if (bossFallbackTimer) clearTimeout(bossFallbackTimer);
     bossFightActive = true; 
     obstacles = []; boxes = []; stars = []; powerups = []; playerBullets = []; bossBullets = [];
     
@@ -672,16 +709,13 @@
         maxHealth: BOSS_MAX_HEALTH,
         lastShoot: 0, 
         activeLane: startLane,
-        
-        // Control de secuencia robusto
         seqIndex: 0,
-        state: 'READY', // READY, MOVING, CHARGING
+        state: 'READY',
         targetX: W + BOSS_W/2,
         speed: 4.5
     };
     
     executeBossStep();
-    
     document.getElementById('boss-hud').classList.add('active');
     AudioSys.stopMusic(); 
     AudioSys.playBossMusic();
@@ -689,20 +723,17 @@
 
   function executeBossStep() {
     if(boss.seqIndex >= BOSS_SEQUENCE.length) boss.seqIndex = 0;
-    
     const cmd = BOSS_SEQUENCE[boss.seqIndex];
     boss.seqIndex++;
 
     if(cmd.type === 'switch') {
         boss.activeLane = (boss.activeLane === 0) ? 1 : 0;
         boss.y = boss.activeLane === 0 ? BOSS_Y_TOP : BOSS_Y_BOTTOM;
-        // El switch es instantáneo, pasamos al siguiente paso inmediatamente
         executeBossStep();
     } 
     else {
         boss.speed = cmd.speed;
         boss.state = (cmd.type === 'charge') ? 'CHARGING' : 'MOVING';
-        
         const minDist = BOSS_W/2 + CAR_W/2 + 150;
         if(cmd.dir === 'left' || cmd.type === 'charge') {
             boss.targetX = Math.max(player.x + minDist, W * 0.25);
@@ -714,33 +745,20 @@
 
   function updateBoss(dt) {
     if (!boss || bossDefeated) return;
-
-    // Lógica de movimiento basada en estado
     if(boss.state === 'MOVING' || boss.state === 'CHARGING') {
         const diff = boss.x - boss.targetX;
         if(Math.abs(diff) < 15) {
             boss.x = boss.targetX;
             boss.state = 'READY';
-            executeBossStep(); // Siguiente paso de la secuencia
+            executeBossStep();
         } else {
             boss.x -= Math.sign(diff) * boss.speed;
         }
     }
-    
-    // Disparos aleatorios
     const now = Date.now();
     if (now - boss.lastShoot > 1200 && Math.random() < 0.03) {
-      bossBullets.push({ 
-        x: boss.x + BOSS_BULLET_OFFSET.x, 
-        y: boss.y + BOSS_BULLET_OFFSET.y, 
-        lane: boss.activeLane, 
-        w: 14, h: 14, 
-        vx: -BOSS_BULLET_SPEED, 
-        damage: 10, 
-        type: 'boss' 
-      });
-      AudioSys.playLaser(); 
-      boss.lastShoot = now;
+      bossBullets.push({ x: boss.x + BOSS_BULLET_OFFSET.x, y: boss.y + BOSS_BULLET_OFFSET.y, lane: boss.activeLane, w: 14, h: 14, vx: -BOSS_BULLET_SPEED, damage: 10, type: 'boss' });
+      AudioSys.playLaser(); boss.lastShoot = now;
     }
     document.getElementById('boss-health-bar').style.width = (boss.health / boss.maxHealth * 100) + '%';
     if (bossHitFlash > 0) bossHitFlash--;
@@ -760,7 +778,6 @@
 
   function playerAutoShoot() {
     const now = Date.now();
-    // 🔧 Disparo automático cada 200ms durante la pelea
     if (now - lastAutoShot >= AUTO_SHOT_INTERVAL && bossFightActive && !bossDefeated) {
       const barrel = getGunBarrelPosition();
       playerBullets.push({ x: barrel.x, y: barrel.y, lane: player.lane, w: 12, h: 12, vx: BULLET_SPEED, damage: 5, type: 'player' });
@@ -791,42 +808,26 @@
       }
       if (b.x > W + 100) playerBullets.splice(i, 1);
     }
-
     for (let i = bossBullets.length - 1; i >= 0; i--) {
-      let b = bossBullets[i]; 
-      b.x += b.vx;
-      
+      let b = bossBullets[i]; b.x += b.vx;
       const bossMidY = (BOSS_Y_TOP + BOSS_Y_BOTTOM) / 2;
       const bulletLane = b.y < bossMidY ? 0 : 1;
-      
-      if (bulletLane === player.lane && 
-          b.x + b.w/2 > player.x - player.w/2 && 
-          b.x - b.w/2 < player.x + player.w/2 && 
-          playerInvincible <= 0) {
-        
-        if (shieldTime > 0) { 
-          shieldTime -= 2000; 
-          spawnShieldPickup(b.x, b.y); 
-        } else {
-          extraLives--; 
-          playerInvincible = 30;
+      if (bulletLane === player.lane && b.x + b.w/2 > player.x - player.w/2 && b.x - b.w/2 < player.x + player.w/2 && playerInvincible <= 0) {
+        if (shieldTime > 0) { shieldTime -= 2000; spawnShieldPickup(b.x, b.y); } 
+        else {
+          extraLives--; playerInvincible = 30;
           triggerScreenFlash('rgba(255,0,0,0.5)', 15);
           document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, extraLives));
-          AudioSys.playCollision(); 
-          spawnSparks(player.x, player.y - player.jumpY);
-          
+          AudioSys.playCollision(); spawnSparks(player.x, player.y - player.jumpY);
           if (extraLives <= 0) {
             finalScore = bankedScore + Math.trunc(score * Math.pow(2, x2Count));
             if (finalScore > highScore) highScore = finalScore;
             document.getElementById('go-score-val').innerText = numFmt.format(finalScore);
             document.getElementById('go-best-val').innerText = numFmt.format(highScore);
-            document.getElementById('game-over-screen').classList.add('active'); 
-            stopLoop(); 
-            gameActive = false;
+            document.getElementById('game-over-screen').classList.add('active'); stopLoop(); gameActive = false;
           }
         }
-        bossBullets.splice(i, 1); 
-        continue;
+        bossBullets.splice(i, 1); continue;
       }
       if (b.x < -100) bossBullets.splice(i, 1);
     }
@@ -846,21 +847,11 @@
   }
 
   function endBossFight() {
-    bossFightActive = false;
-    boss = null;
-    bossBullets = [];
-    playerBullets = [];
-    
-    showPowerUpNotification('boss_defeated');
-    score += 1000;
-    
-    bossDeathPause = 180;
-    bossDefeated = true;
-    
+    bossFightActive = false; boss = null; bossBullets = []; playerBullets = [];
+    showPowerUpNotification('boss_defeated'); score += 1000;
+    bossDeathPause = 180; bossDefeated = true;
     document.getElementById('boss-hud').classList.remove('active');
-    AudioSys.stopBossMusic();
-    AudioSys.playMusic('almacen.ogg');
-    songCycleEnded = true;
+    AudioSys.stopBossMusic(); AudioSys.playMusic('almacen.ogg'); songCycleEnded = true;
   }
 
   let lastFrameTime = 0;
@@ -871,7 +862,6 @@
     lastFrameTime = now;
     
     if (AudioSys.mainMusic && !bossFightActive && !bossDefeated && !songCycleEnded) {
-        // 🔧 CHEQUEO SEGURO: Solo usa la música si tiene duración válida
         if (AudioSys.mainMusic.duration && AudioSys.mainMusic.currentTime > AudioSys.mainMusic.duration - 0.2) { spawnBoss(); songCycleEnded = true; }
     }
 
@@ -882,18 +872,14 @@
     if (bossDeathPause > 0) {
       bossDeathPause--;
       if (bossDeathPause <= 0) {
-        bossDefeated = false;
-        songCycleEnded = false;
-        lastSpawnX = player.x + 800;
-        spawnGapTracker = 0;
+        bossDefeated = false; songCycleEnded = false;
+        lastSpawnX = player.x + 800; spawnGapTracker = 0;
         nextSpawnGap = 150 + Math.random() * 150;
         spawnFloatingText(W/2, H/2 + 40, "🔄 ¡Fase reanudada!", "#0ff");
       }
     }
     
-    score += player.speed * 0.05; 
-    let scoreMultiplier = Math.pow(2, x2Count); 
-    let currentScore = bankedScore + Math.trunc(score * scoreMultiplier);
+    score += player.speed * 0.05; let scoreMultiplier = Math.pow(2, x2Count); let currentScore = bankedScore + Math.trunc(score * scoreMultiplier);
     let diffLevel = Math.max(0, Math.floor((roadOffset - 25000) / 25000)), minGap = Math.max(140, 300 - diffLevel * 40), maxGap = Math.max(250, 500 - diffLevel * 50);
     player.speed=isBraking?Math.max(0,player.speed-0.1):Math.min(player.speed+0.01,player.maxSpeed);
     player.y+=(player.targetY-player.y)*0.15; roadOffset+=player.speed*4; wheelRotation+=player.speed*0.12;
@@ -905,7 +891,7 @@
       if(spawnGapTracker >= nextSpawnGap) { spawnObstacle(); spawnGapTracker = 0; nextSpawnGap = minGap + Math.random() * (maxGap - minGap); } 
     }
     
-    if (bossFightActive && !bossDefeated) playerAutoShoot(); // 🔧 Disparo automático activo
+    if (bossFightActive && !bossDefeated) playerAutoShoot();
     
     for(let i=stars.length-1;i>=0;i--){let s=stars[i];if(s.collected){stars.splice(i,1);continue;}s.x-=player.speed*4;if(player.lane===s.lane&&Math.abs(player.x-s.x)<70){s.collected=true;collectedStars++;score+=10;AudioSys.playStar();spawnStarCollect(s.x,s.y);if(collectedStars%100===0&&collectedStars>0){extraLives++;AudioSys.playExtraLife();spawnStarCollect(player.x,player.y-player.jumpY);triggerScreenFlash('rgba(0,255,100,0.4)',10);spawnFloatingText(player.x, player.y-50, "VIDA EXTRA!", "#0f0"); showPowerUpNotification('extra_life');}document.getElementById('stars').innerText=collectedStars;document.getElementById('lives').innerText="❤️".repeat(extraLives);spawnFloatingText(s.x, s.y, "+10", "#ffd700");}if(s.x<-50)stars.splice(i,1);}
     
@@ -925,28 +911,11 @@
 
   function loop(){ 
     if (!gameActive) { animationId = null; return; }
-    
     let shakeX = 0, shakeY = 0;
-    if (screenShake.active) {
-      shakeX = (Math.random() - 0.5) * screenShake.intensity;
-      shakeY = (Math.random() - 0.5) * screenShake.intensity;
-      screenShake.intensity *= 0.9;
-    }
-    
-    ctx.save();
-    ctx.translate(shakeX, shakeY);
-    ctx.clearRect(-shakeX, -shakeY, W, H); 
+    if (screenShake.active) { shakeX = (Math.random() - 0.5) * screenShake.intensity; shakeY = (Math.random() - 0.5) * screenShake.intensity; screenShake.intensity *= 0.9; }
+    ctx.save(); ctx.translate(shakeX, shakeY); ctx.clearRect(-shakeX, -shakeY, W, H); 
     drawWarehouse(); drawRoad(); 
-    
-    if (screenFlash.active) {
-      ctx.fillStyle = screenFlash.color;
-      ctx.globalAlpha = screenFlash.alpha;
-      ctx.fillRect(-shakeX, -shakeY, W, H);
-      ctx.globalAlpha = 1;
-      screenFlash.alpha -= 0.06;
-      if (screenFlash.alpha <= 0) screenFlash.active = false;
-    }
-    
+    if (screenFlash.active) { ctx.fillStyle = screenFlash.color; ctx.globalAlpha = screenFlash.alpha; ctx.fillRect(-shakeX, -shakeY, W, H); ctx.globalAlpha = 1; screenFlash.alpha -= 0.06; if (screenFlash.alpha <= 0) screenFlash.active = false; }
     let list=[]; 
     stars.forEach(s=>{if(!s.collected)list.push({t:'star',o:s,y:s.y})}); 
     boxes.forEach(b=>list.push({t:'box',o:b,y:b.y})); 
@@ -955,10 +924,8 @@
     if(gameActive)list.push({t:'p',o:player,y:player.y-player.jumpY}); 
     list.sort((a,b)=>a.y-b.y); 
     list.forEach(i=>{if(i.t==='p')drawPlayerSprite();else if(i.t==='star')drawStar(i.o);else if(i.t==='box')drawBox(i.o);else if(i.t==='powerup')drawPowerup(i.o);else if(i.o.isRamp)drawRamp(i.o);else drawObstacleSprite(i.o);}); 
-    
     drawBoss(); drawBullets(); drawParticles(); 
     floatingTexts.forEach(ft => { ctx.save(); ctx.globalAlpha = ft.life; ctx.fillStyle = ft.color; ctx.shadowColor = "#000"; ctx.shadowBlur = 4; ctx.font = "18px 'Press Start 2P', monospace"; ctx.textAlign = "center"; ctx.fillText(ft.text, ft.x, ft.y); ctx.restore(); }); 
-    
     if (bossFightActive) {
       ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 3; ctx.setLineDash([10, 10]);
       ctx.beginPath(); ctx.moveTo(0, player.lane === 0 ? LANE_TOP + LANE_HEIGHT/2 : LANE_BOTTOM + LANE_HEIGHT/2); ctx.lineTo(W, player.lane === 0 ? LANE_TOP + LANE_HEIGHT/2 : LANE_BOTTOM + LANE_HEIGHT/2); ctx.stroke();
@@ -967,7 +934,6 @@
       ctx.beginPath(); ctx.moveTo(0, boss.activeLane === 0 ? BOSS_Y_TOP + BOSS_H/2 : BOSS_Y_BOTTOM + BOSS_H/2); ctx.lineTo(W, boss.activeLane === 0 ? BOSS_Y_TOP + BOSS_H/2 : BOSS_Y_BOTTOM + BOSS_H/2); ctx.stroke();
       ctx.setLineDash([]);
     }
-    
     ctx.restore();
     if(gameActive) update(0.016);
     animationId = requestAnimationFrame(loop); 
@@ -975,9 +941,6 @@
   
   function startLoop() { if(!animationId && gameActive) { lastFrameTime = performance.now(); loop(); } }
   function stopLoop() { if(animationId) { cancelAnimationFrame(animationId); animationId = null; } }
-
-  // 🔧 LIMPIEZA: Eliminados disparos manuales (ratón/teclado) para evitar conflictos.
-  // El disparo ahora es 100% automático durante la pelea.
 
   document.getElementById('saveScoreBtn').addEventListener('click', () => {
     const nameInput = document.getElementById('player-name'); const name = nameInput.value.trim();
